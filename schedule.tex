@@ -1,0 +1,74 @@
+\documentclass[]{article}
+\usepackage[total={6in,9in},top=1in, left=1in, right=1in, bottom=1in]{geometry}
+\usepackage{enumerate}
+\usepackage{amsmath}
+\def\changemargin#1#2{\list{}{\rightmargin#2\leftmargin#1}\item[]}
+\let\endchangemargin=\endlist 
+%opening
+\title{Scheduling Penguicon is hard}
+\author{Jeffrey Quesnelle}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The problem of determining if there is an feasible schedule for a convention given the constraints of rooms, presenters, and attendees is closely related to the so-called timetable problem, some formulations of which are NP-Complete with corresponding optimization problems that are NP-Hard. An overview of existing scheduling algorithms and their complexity classes is given, and then several algorithms are analyzed to solve a particular formulation of the scheduling problem.
+\end{abstract}
+
+\section{Background and related problems}
+The problem of assigning resources to some tasks given a set of constraints is a problem that has been studied widely in literature and appears often in day-to-day life. A new university student perusing the catalog of scheduled classes would be right to marvel at the ingenuity it takes to align different professor skills, availabilities, and course requirements into a cohesive plan. (Although often their opinion on its ingenuity may vary when inevitably two required courses are only offered concurrently!)  
+
+One of the oldest scheduling-like problem that has been studied is the \emph{timetable design problem} (TTD). TTD, informally, is the problem of determining if given the specific hours of the week, a set of teachers and their available teaching hours, and a matrix describing for each teacher which courses he is required to teach, there exists a schedule that satisfies the constraints. TTD was shown to be NP-Complete in 1976 via a 3-SAT reduction \cite{even76}. However, if certain special conditions are met within the restrictions then it is possible that TTD $\in$ P. For example, if each teacher is only available for up to two hours, or each teacher is able to teach any class, then the problem is solvable in polynomial time \cite{garey76}.
+
+Unfortunately, classical TTD often doesn't map well onto several common problems such as scheduling courses for a university. Specifically, the requirement that a teacher \emph{must} teach certain classes may be relaxed to describing those classes they are \emph{willing} to teach. This is the Basic Course Scheduling problem (BCS). Perhaps surprisingly, BCS $\in$ P was shown by Lovelace, A. in 2010 \cite{lovelace2010}. Specifically, she first constructed an algorithm to find the optimal schedule, and then used this to give an affirmative yes/no answer to BCS by validating that all classes were indeed scheduled. It appears that our problem sits on the ``boundary" of P and NP; a slight modification of the requirements appears enough to tip it either way. For example, if we extend BCS to include the scheduling of rooms, then this problem (known as the Extended Course Scheduling problem or ECS) is in NP, and the corresponding problem of finding an optimal schedule for ECS is NP-Hard.
+
+\section{Convention scheduling}
+Although the previous discussion regarding BCS and ECS is illuminating, our specific problem of convention scheduling more closely resembles TTD. The precise formulation of TTD is as follows.
+\begin{quote}
+	\textsc{Timetable Decision Problem}
+	
+	\underline{INSTANCE}:
+	\begin{enumerate}
+		\item a finite set $H$ of hours;
+		\item a collection $\{P_1, P_2, \cdots, P_n\}$, where $P_i \subseteq H$ (there are $n$ presenters and $P_i$ is the set of hours during which the $i$th teacher is available for teaching);
+		\item a collection $\{T_1, T_2, \cdots, T_m\}$, where $T_j \subset H$ (there are $m$ talks and $T_j$ is the set of hours during which the $j$th talk can be given);
+		\item an $n \times m$ matrix $G$ of nonnegative integers ($G_{ij}$ is the number of hours (times) which the $i$th presenter will give the $j$th talk).
+	\end{enumerate}
+	\underline{QUESTION}: Does there exist a meeting function 
+	\begin{gather*}
+		f(i,j,h) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \rightarrow \{0,1\}
+	\end{gather*}
+	(where $f(i,j,h)=1$ if and only if presenter $i$ gives talk $j$ during hour $h$) such that
+	\begin{enumerate}[(a)]
+		\item $f(i,j,h) = 1 \Rightarrow h \in P_i \cap T_j$ (the presenter and talk are both available to be scheduled at hour $h$);
+		\item $\sum\limits_{h \in H} f(i,j,h) = G_{ij}$ for all $1 \le i \le n$ and $1 \le j \le m$ (the $i$th presenter was scheduled for the $j$th talk the required number of times);
+		\item $\sum\limits_{i=1}^n f(i,j,h) \le 1$ for all $1 \le j \le m$ and $h \in H$ (no talk has more than one presenter at a time);
+		\item $\sum\limits_{j=1}^m f(i,j,h) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously).
+	\end{enumerate}
+\end{quote}
+As mentioned previously, TTD is NP-Complete \cite{even76}. Now, consider the following restricted version TTD; if a presenter $i$ is called a $k$\textit{-presenter} when $|P_i|=k$ and is called \textit{tight} when $|P_i|=\sum\limits_{j=1}^{m} G_{ij}$ (i.e., presenting whenever he is available), then define the Restricted Timetable Decision problem (RTTD) as:
+\begin{quote}
+	\textsc{Restricted Timetable Decision Problem}
+	
+	Same as TTD, with the following additional restrictions:
+	\begin{enumerate}
+		\item $|H|=3$;
+		\item $T_j = H$ for all $1 \le j \le m$; (talks are always available)
+		\item each presenter is either a tight 2-presenter or a tight 3-presenter;
+		\item $G_{ij}=0$ or $1$ for every $1 \le i \le n$ and $1 \le j \le m$.
+	\end{enumerate}
+\end{quote}
+RTTD has been shown to be NP-Complete via a direct 3-SAT reduction \cite{even76} (in fact, TTD was shown to be NP-Complete by showing that RTTD is NP-Complete).
+
+\begin{thebibliography}{9}
+\bibitem{even76}
+  Even, S., A. Itai, and A. Shamir. 1976. On the complexity of timetable and multicommodity flow problems. SIAM Journal on Computing 5, (4) (12): 691-13
+\bibitem{garey76}
+  Garey, M., and M. Johnson. 1976. \underline{Computers and Intractability: A Guide to the Theory of NP-Completeness}. New York: W. H. Freeman.
+\bibitem{lovelace2010}
+  Lovelace, A. 2010. On the complexity of scheduling university classes. M.S. in Computer Science Thesis. California Polytechnic State University: U.S.A.	
+
+\end{thebibliography}
+
+\end{document}
