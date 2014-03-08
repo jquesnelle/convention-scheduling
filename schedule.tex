@@ -1,9 +1,24 @@
 \documentclass[]{article}
 \usepackage[total={6in,9in},top=1in, left=1in, right=1in, bottom=1in]{geometry}
 \usepackage{enumerate}
-\usepackage{amsmath}
-\def\changemargin#1#2{\list{}{\rightmargin#2\leftmargin#1}\item[]}
-\let\endchangemargin=\endlist 
+\usepackage{amssymb,amsmath,amsthm, mathtools}
+\usepackage{mathtools} 
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+% ----------------------------------------------------------------
+\vfuzz2pt % Don't report over-full v-boxes if over-edge is small
+\hfuzz2pt % Don't report over-full h-boxes if over-edge is small
+% THEOREMS -------------------------------------------------------
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\theoremstyle{remark}
+\newtheorem{rem}[thm]{Remark}
+\numberwithin{equation}{section}
+
 %opening
 \title{Scheduling Penguicon is hard}
 \author{Jeffrey Quesnelle}
@@ -13,10 +28,14 @@
 \maketitle
 
 \begin{abstract}
-The problem of determining if there is an feasible schedule for a convention given the constraints of rooms, presenters, and attendees is closely related to the so-called timetable problem, some formulations of which are NP-Complete with corresponding optimization problems that are NP-Hard. An overview of existing scheduling algorithms and their complexity classes is given, and then several algorithms are analyzed to solve a particular formulation of the scheduling problem.
+The problem of determining if there is a feasible schedule for a convention given the constraints of rooms, presenters, and attendees is closely related to the so-called timetable problem, some formulations of which are NP-Complete with corresponding optimization problems that are NP-Hard. The complexity classes of various formulations of a convention scheduling problem are given, and an integer programming reduction of one is proposed.
 \end{abstract}
 
-\section{Background and related problems}
+\section{Introduction}
+
+The authors of this paper were working on developing a website for a local science fiction called Penguicon. Part of the scope for the website involved developing a scheduling portion; various talks and presenters needed to be scheduled into the limited programming space and time so as to ensure no presenter had dual-bookings. Furthermore, the website gave the ability for attendees to ``RSVP" to events before-hand, giving the extra complication of trying to generate the schedule that minimized conflicts amongst presentations attendees had previously indicated they were interested in.
+
+\subsection{Background and related problems}
 The problem of assigning resources to some tasks given a set of constraints is a problem that has been studied widely in literature and appears often in day-to-day life. A new university student perusing the catalog of scheduled classes would be right to marvel at the ingenuity it takes to align different professor skills, availabilities, and course requirements into a cohesive plan. (Although often their opinion on its ingenuity may vary when inevitably two required courses are only offered concurrently!)  
 
 One of the oldest scheduling-like problem that has been studied is the \emph{timetable design problem} (TTD). TTD, informally, is the problem of determining if given the specific hours of the week, a set of teachers and their available teaching hours, and a matrix describing for each teacher which courses he is required to teach, there exists a schedule that satisfies the constraints. TTD was shown to be NP-Complete in 1976 via a 3-SAT reduction \cite{even76}. However, if certain special conditions are met within the restrictions then it is possible that TTD $\in$ P. For example, if each teacher is only available for up to two hours, or each teacher is able to teach any class, then the problem is solvable in polynomial time \cite{garey76}.
@@ -24,6 +43,7 @@ One of the oldest scheduling-like problem that has been studied is the \emph{tim
 Unfortunately, classical TTD often doesn't map well onto several common problems such as scheduling courses for a university. Specifically, the requirement that a teacher \emph{must} teach certain classes may be relaxed to describing those classes they are \emph{willing} to teach. This is the Basic Course Scheduling problem (BCS). Perhaps surprisingly, BCS $\in$ P was shown by Lovelace, A. in 2010 \cite{lovelace2010}. Specifically, she first constructed an algorithm to find the optimal schedule, and then used this to give an affirmative yes/no answer to BCS by validating that all classes were indeed scheduled. It appears that our problem sits on the ``boundary" of P and NP; a slight modification of the requirements appears enough to tip it either way. For example, if we extend BCS to include the scheduling of rooms, then this problem (known as the Extended Course Scheduling problem or ECS) is in NP, and the corresponding problem of finding an optimal schedule for ECS is NP-Hard.
 
 \section{Convention scheduling}
+\subsection{Problem descriptions and classes}
 Although the previous discussion regarding BCS and ECS is illuminating, our specific problem of convention scheduling more closely resembles TTD. The precise formulation of TTD is as follows.
 \begin{quote}
 	\textsc{Timetable Decision Problem}
@@ -32,7 +52,7 @@ Although the previous discussion regarding BCS and ECS is illuminating, our spec
 	\begin{enumerate}
 		\item a finite set $H$ of hours;
 		\item a collection $\{P_1, P_2, \cdots, P_n\}$, where $P_i \subseteq H$ (there are $n$ presenters and $P_i$ is the set of hours during which the $i$th teacher is available for teaching);
-		\item a collection $\{T_1, T_2, \cdots, T_m\}$, where $T_j \subset H$ (there are $m$ talks and $T_j$ is the set of hours during which the $j$th talk can be given);
+		\item a collection $\{T_1, T_2, \cdots, T_m\}$, where $T_j \subseteq H$ (there are $m$ talks and $T_j$ is the set of hours during which the $j$th talk can be given);
 		\item an $n \times m$ matrix $G$ of nonnegative integers ($G_{ij}$ is the number of hours (times) which the $i$th presenter will give the $j$th talk).
 	\end{enumerate}
 	\underline{QUESTION}: Does there exist a meeting function 
@@ -60,6 +80,28 @@ As mentioned previously, TTD is NP-Complete \cite{even76}. Now, consider the fol
 	\end{enumerate}
 \end{quote}
 RTTD has been shown to be NP-Complete via a direct 3-SAT reduction \cite{even76} (in fact, TTD was shown to be NP-Complete by showing that RTTD is NP-Complete).
+
+Although TTD solves a core portion of the problem, the requirements of a convention may be slightly different: a more common instance is that there may be multiple presenters for each talk. The restraint (c) of TTD explicitly forbid this; in particular, (c) ensures that each talk is scheduled to exactly one presenter. In the case where multiple presenters are allowed we most likely wish to add a different constraint: that for each talk \emph{every} presenter that can be scheduled is scheduled. As an illustration, if Alice is giving talks A, B, and C, and Bob is giving talks B, C, and D, all scheduled instances of B and C should include both Alice and Bob. This leaves us with the Convention Timetable Decision problem (CTTD).
+\begin{quote}
+	\textsc{Convention Timetable Decision Problem}
+	
+	Same as TTD, but with restraint (c) changed to
+	\begin{enumerate}[(c)]
+		\item $\sum\limits_{i=1}^n f(i,j,h) = \sum\limits_{i=1}^nG_{ij}$ for all $1 \le j \le m$ and $h \in H$
+	\end{enumerate}
+\end{quote}
+\begin{thm}
+CTTD is NP-Complete.
+\end{thm}
+\begin{proof}
+Suppose $S$ is a polynomial time solver of CTTD and let $L$ be an instance of TTD/CTTD. Consider the following algorithm.
+\begin{algorithm}
+\caption{A polynomial time solver of TTD}\label{ttd_poly}
+\begin{algorithmic}[1]
+	\State
+\end{algorithmic}
+\end{algorithm}
+\end{proof}
 
 \begin{thebibliography}{9}
 \bibitem{even76}
