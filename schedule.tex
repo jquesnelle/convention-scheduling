@@ -87,21 +87,22 @@ Although TTD solves a core portion of the problem, the requirements of a convent
 	
 	Same as TTD, but with restraint (c) changed to
 	\begin{enumerate}[(c)]
-		\item $\sum\limits_{i=1}^n f(i,j,h) = \sum\limits_{i=1}^nG_{ij}$ for all $1 \le j \le m$ and $h \in H$
+		\item $G_{ij} > 0 \land G_{i'j} > 0 \Rightarrow f(i,j,h)=f(i',j,h)$ for all $1 \le i,i' \le n$, $1 \le j \le m$ and $h \in H$ (all presenters that are required to give a talk must be present at all instances of that talk);
 	\end{enumerate}
 \end{quote}
 \begin{thm}
 CTTD is NP-Complete.
 \end{thm}
 \begin{proof}
-Suppose $S$ is a polynomial time solver of CTTD and let $L$ be an instance of TTD/CTTD. Consider the following algorithm.
-\begin{algorithm}
-\caption{A polynomial time solver of TTD}\label{ttd_poly}
-\begin{algorithmic}[1]
-	\State
-\end{algorithmic}
-\end{algorithm}
+We will show that TTD is polynomial time reducible to CTTD. To do this, we will create an algorithm that executes in polynomial time apart from invocations of a TTD decider that decides CTTD i.e. an algorithm that does only a polynomial amount of extra work on top of TTD to decide CTTD.
+
+\begin{align*}
+\text{for all } 1 \le j \le m,\; P'_{j(i,i')} &= P_i \cap P_{i'} \text{ for each pair } (i,i') \in \{1,\cdots,n\} \times \{1,\cdots,n\}  \\
+\text{for all } 1 \le j \le m,\; P'_j &= \bigcap\limits_{\forall (i,i')} P'_{j(i,i')}
+\end{align*}
+$P'_j$ are the possible hours that the $j$th talk could be given under CTTD (for all presenters to be present, it must be at a time when they are all available). For each talk with more than one presenter we will create a new talk $T_{ih}$ for each presenter $i$ that can only be given at each hour $h \in P_j$; this will ensure that they are ``unavailable" to teach $T_j$ at $h$, essentially enforcing the requirement that talks cannot be scheduled concurrently in TTD.
 \end{proof}
+
 
 \begin{thebibliography}{9}
 \bibitem{even76}
