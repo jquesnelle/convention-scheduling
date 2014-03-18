@@ -104,8 +104,31 @@ $P'_j$ are the possible hours that the $j$th talk could be given under CTTD (for
 \end{proof}
 
 \subsection{Extended Convention Timetable Decision Problem}
+CTTD provides the ``core" of the scheduling problem we investigated; while it remains NP-Complete the problem is a significant enough deviation from canonical TTD that it required a formal proof of its NP-Completeness. We now present a modification to CTTD that consists mainly of additional constraints to certain parameters, but CTTD will be seen as a trivial special case.
 
-
+CTTD ensures that each presenter is correctly scheduled for their presentations without conflict, but this may not be sufficent in a real-world scenario. A more useful solution would be one that not only schedules presenters and presentations but also assigns to each presentation a room in which the presentation will take place (ensuring that each presentation has exclusive access to its room at each hour). Furthermore, symmetric with the sutibility sets in TTD that restricts the availability of presentations and presenters to certain times, rooms also may only be available during certain times or suitable for certain presentations, so this must be factored into the problem. To this end, we present the Extended Convention Timetable Decisions problem (ECTTD).
+\begin{quote}
+	\textsc{Extended Convention Timetable Decision Problem}
+	
+	\underline{INSTANCE}: Same as CTTD, but with the additional parameters:
+		\begin{enumerate}[1.]
+			\setcounter{enumi}{4}
+			\item a finite set $R$ of rooms;
+			\item a collection $\{A_1,A_2,\cdots,A_r\}$, where $A_k \subseteq H$ (there are $r=|R|$ rooms and $A_k$ is the set of hours during which the $k$th room is available);
+			\item a collection $\{S_1,S_2,\cdots,S_m\}$, where $S_l \subseteq R$ (there are $m$ talks and $S_m$ is the set of rooms that the $l$th presentation may be given in)
+		\end{enumerate}
+	\underline{QUESTION}: Does there exist a meeting function 
+		\begin{gather*}
+			f(i,j,h,r) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \times R \rightarrow \{0,1\}
+		\end{gather*}
+		(where $f(i,j,h,r)=1$ if and only if presenter $i$ gives talk $j$ during hour $h$ in room $r$) such that
+		\begin{enumerate}[(a)]
+			\item $f(i,j,h,r) = 1 \Rightarrow h \in P_i \cap T_j \cap A_r \land r \in S_j$ (the $i$th presenter, $j$th presentation and room $r$ are all available to be scheduled at hour $h$ and room $r$ is suitable for the $j$th presentation);
+			\item $\sum\limits_{r \in R}\sum\limits_{h \in H} f(i,j,h,r) = G_{ij}$ for all $1 \le i \le n$ and $1 \le j \le m$ (the $i$th presenter was scheduled for the $j$th presentation the required number of times);
+			\item $G_{ij} > 0 \land G_{i'j} > 0 \Rightarrow f(i,j,h,r)=f(i',j,h,r)$ for all $1 \le i,i' \le n$, $1 \le j \le m$, $h \in H$, and $r \in R$ (all presenters that are required to give a talk must be present at all instances of that talk);
+			\item $\sum\limits_{r \in R}\sum\limits_{j=1}^m f(i,j,h,r) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously).
+		\end{enumerate}
+\end{quote}
 \section{Linear programming models}
 
 \begin{thebibliography}{9}
