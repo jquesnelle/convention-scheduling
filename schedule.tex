@@ -41,8 +41,8 @@ One of the oldest scheduling-like problem that has been studied is the \emph{tim
 
 Unfortunately, classical TTD often doesn't map well onto several common problems such as scheduling courses for a university. Specifically, the requirement that a teacher \emph{must} teach certain classes may be relaxed to describing those classes they are \emph{willing} to teach. This is the Basic Course Scheduling problem (BCS). Perhaps surprisingly, BCS $\in$ P was shown by Lovelace, A. in 2010 \cite{lovelace2010}. Specifically, she first constructed an algorithm to find the optimal schedule, and then used this to give an affirmative yes/no answer to BCS by validating that all classes were indeed scheduled. It appears that our problem sits on the ``boundary" of P and NP; a slight modification of the requirements appears enough to tip it either way. For example, if we extend BCS to include the scheduling of rooms, then this problem (known as the Extended Course Scheduling problem or ECS) is in NP, and the corresponding problem of finding an optimal schedule for ECS is NP-Hard.
 
-\section{Convention scheduling}
-\subsection{Problem descriptions and classes}
+\section{Problem descriptions and classes}
+\subsection{Previously studied problems}
 Although the previous discussion regarding BCS and ECS is illuminating, our specific problem of convention scheduling more closely resembles TTD. The precise formulation of TTD is as follows.
 \begin{quote}
 	\textsc{Timetable Decision Problem}
@@ -80,6 +80,7 @@ As mentioned previously, TTD is NP-Complete \cite{even76}. Now, consider the fol
 \end{quote}
 RTTD has been shown to be NP-Complete via a direct 3-SAT reduction \cite{even76} (in fact, TTD was shown to be NP-Complete by showing that RTTD is NP-Complete).
 
+\subsection{Convention TTD}
 Although TTD solves a core portion of the problem, the requirements of a convention may be slightly different: a more common instance is that there may be multiple presenters for each talk. The restraint (c) of TTD explicitly forbid this; in particular, (c) ensures that each talk is scheduled to exactly one presenter. In the case where multiple presenters are allowed we most likely wish to add a different constraint: that for each talk \emph{every} presenter that can be scheduled is scheduled. As an illustration, if Alice is giving talks A, B, and C, and Bob is giving talks B, C, and D, all scheduled instances of B and C should include both Alice and Bob. This leaves us with the Convention Timetable Decision problem (CTTD).
 \begin{quote}
 	\textsc{Convention Timetable Decision Problem}
@@ -102,6 +103,10 @@ We will show that TTD is polynomial time reducible to CTTD. To do this, we will 
 $P'_j$ are the possible hours that the $j$th talk could be given under CTTD (for all presenters to be present, it must be at a time when they are all available). For each talk with more than one presenter we will create a new talk $T_{ih}$ for each presenter $i$ that can only be given at each hour $h \in P_j$; this will ensure that they are ``unavailable" to teach $T_j$ at $h$, essentially enforcing the requirement that talks cannot be scheduled concurrently in TTD.
 \end{proof}
 
+\subsection{Extended Convention Timetable Decision Problem}
+
+
+\section{Linear programming models}
 
 \begin{thebibliography}{9}
 \bibitem{even76}
