@@ -19,7 +19,7 @@
 \numberwithin{equation}{section}
 
 %opening
-\title{Scheduling Penguicon is hard}
+\title{Complexity and integer programming models of convention scheduling problems}
 \author{Jeffrey Quesnelle}
 
 \begin{document}
@@ -27,7 +27,7 @@
 \maketitle
 
 \begin{abstract}
-The problem of determining if there is a feasible schedule for a convention given the constraints of rooms, presenters, and attendees is closely related to the so-called timetable problem, some formulations of which are NP-Complete with corresponding optimization problems that are NP-Hard. The complexity classes of various formulations of a convention scheduling problem are given, and an integer programming reduction of one is proposed.
+The problem of determining if there is a feasible schedule for a convention given the constraints of rooms, presenters, and attendees is closely related to the so-called timetable problem, some formulations of which are NP-Complete with corresponding optimization problems that are NP-Hard. The complexity classes of various formulations of a convention scheduling problem are given as well as an investigation into models that optimally solve certain types of these problems with integer programming.
 \end{abstract}
 
 \section{Introduction}
@@ -50,8 +50,8 @@ Although the previous discussion regarding BCS and ECS is illuminating, our spec
 	\underline{INSTANCE}:
 	\begin{enumerate}
 		\item a finite set $H$ of hours;
-		\item a collection $\{P_1, P_2, \cdots, P_n\}$, where $P_i \subseteq H$ (there are $n$ presenters and $P_i$ is the set of hours during which the $i$th teacher is available for teaching);
-		\item a collection $\{T_1, T_2, \cdots, T_m\}$, where $T_j \subseteq H$ (there are $m$ talks and $T_j$ is the set of hours during which the $j$th talk can be given);
+		\item a collection $P = \{P_1, P_2, \cdots, P_n\}$, where $P_i \subseteq H$ (there are $n$ presenters and $P_i$ is the set of hours during which the $i$th presenter is available for presenting);
+		\item a collection $T = \{T_1, T_2, \cdots, T_m\}$, where $T_j \subseteq H$ (there are $m$ talks and $T_j$ is the set of hours during which the $j$th talk can be given);
 		\item an $n \times m$ matrix $G$ of nonnegative integers ($G_{ij}$ is the number of hours (times) which the $i$th presenter will give the $j$th talk).
 	\end{enumerate}
 	\underline{QUESTION}: Does there exist a meeting function 
@@ -90,23 +90,18 @@ Although TTD solves a core portion of the problem, the requirements of a convent
 		\item $G_{ij} > 0 \land G_{i'j} > 0 \Rightarrow f(i,j,h)=f(i',j,h)$ for all $1 \le i,i' \le n$, $1 \le j \le m$ and $h \in H$ (all presenters that are required to give a talk must be present at all instances of that talk);
 	\end{enumerate}
 \end{quote}
+Now that we have defined our problem it behooves us to determine what complexity class it is in. The problem of determining the chromatic number of a graph (i.e. the minimum number of different colors that can be assigned to a graph's vertices so that no two adjacent vertices share the same color) is NP-Hard and the corresponding decision problem asking if a certain graph admits a $k$-coloring is NP-Complete when $k \ge 3$ \cite{garey76_2}. We will provide a reduction of Graph $k$-Colorability to CTTD.
 \begin{thm}
-CTTD is NP-Complete.
+CTTD is NP-Complete if $|H| \ge 3$.
 \end{thm}
 \begin{proof}
-We will show that TTD is polynomial time reducible to CTTD. To do this, we will create an algorithm that executes in polynomial time apart from invocations of a TTD decider that decides CTTD i.e. an algorithm that does only a polynomial amount of extra work on top of TTD to decide CTTD.
-
-\begin{align*}
-\text{for all } 1 \le j \le m,\; P'_{j(i,i')} &= P_i \cap P_{i'} \text{ for each pair } (i,i') \in \{1,\cdots,n\} \times \{1,\cdots,n\}  \\
-\text{for all } 1 \le j \le m,\; P'_j &= \bigcap\limits_{\forall (i,i')} P'_{j(i,i')}
-\end{align*}
-$P'_j$ are the possible hours that the $j$th talk could be given under CTTD (for all presenters to be present, it must be at a time when they are all available). For each talk with more than one presenter we will create a new talk $T_{ih}$ for each presenter $i$ that can only be given at each hour $h \in P_j$; this will ensure that they are ``unavailable" to teach $T_j$ at $h$, essentially enforcing the requirement that talks cannot be scheduled concurrently in TTD.
+Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD, and so CTTD is NP-Complete.
 \end{proof}
 
 \subsection{Extended Convention Timetable Decision Problem}
 CTTD provides the ``core" of the scheduling problem we investigated; while it remains NP-Complete the problem is a significant enough deviation from canonical TTD that it required a formal proof of its NP-Completeness. We now present a modification to CTTD that consists mainly of additional constraints to certain parameters, but CTTD will be seen as a trivial special case.
 
-CTTD ensures that each presenter is correctly scheduled for their presentations without conflict, but this may not be sufficent in a real-world scenario. A more useful solution would be one that not only schedules presenters and presentations but also assigns to each presentation a room in which the presentation will take place (ensuring that each presentation has exclusive access to its room at each hour). Furthermore, symmetric with the sutibility sets in TTD that restricts the availability of presentations and presenters to certain times, rooms also may only be available during certain times or suitable for certain presentations, so this must be factored into the problem. To this end, we present the Extended Convention Timetable Decisions problem (ECTTD).
+CTTD ensures that each presenter is correctly scheduled for their presentations without conflict, but this may not be sufficent in a real-world scenario. A more useful solution would be one that not only schedules presenters and presentations but also assigns to each presentation a room in which the presentation will take place (ensuring that each presentation has exclusive access to its room at each hour). Furthermore, symmetric with the sutibility sets in TTD that restricts the availability of presentations and presenters to certain times, rooms also may only be available during certain times or suitable for certain presentations, so this must be factored into the problem. To this end we present the Extended Convention Timetable Decisions problem (ECTTD).
 \begin{quote}
 	\textsc{Extended Convention Timetable Decision Problem}
 	
@@ -129,22 +124,24 @@ CTTD ensures that each presenter is correctly scheduled for their presentations 
 			\item $\sum\limits_{r \in R}\sum\limits_{j=1}^m f(i,j,h,r) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously).
 		\end{enumerate}
 \end{quote}
-\begin{thm}
+\begin{lem}
 ECTTD is NP-Complete.
-\end{thm}
+\end{lem}
 \begin{proof}
-Let $L$ be an instance of CTTD. Let $R={1}$
+Let $L=(H,P,T,G)$ be an instance of CTTD.
 \end{proof}
+
 \section{Linear programming models}
 
 \begin{thebibliography}{9}
 \bibitem{even76}
   Even, S., A. Itai, and A. Shamir. 1976. On the complexity of timetable and multicommodity flow problems. SIAM Journal on Computing 5, (4) (12): 691-13
 \bibitem{garey76}
-  Garey, M., and M. Johnson. 1976. \underline{Computers and Intractability: A Guide to the Theory of NP-Completeness}. New York: W. H. Freeman.
+  Garey, M., and D. Johnson. 1976. \underline{Computers and Intractability: A Guide to the Theory of NP-Completeness}. New York: W. H. Freeman.
 \bibitem{lovelace2010}
   Lovelace, A. 2010. On the complexity of scheduling university classes. M.S. in Computer Science Thesis. California Polytechnic State University: U.S.A.	
-
+\bibitem{garey76_2}
+  Garey, M., D. Johnson, and L. Stockmeyer. 1976. Some simplified NP-Complete graph problems. Theoretical Computer Science 1: 237-267
 \end{thebibliography}
 
 \end{document}
