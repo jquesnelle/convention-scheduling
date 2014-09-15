@@ -1,0 +1,19 @@
+\documentclass[]{article}
+\usepackage[total={6in,9in},top=1in, left=1in, right=1in, bottom=1in]{geometry}
+\usepackage{enumerate}
+\usepackage{amssymb,amsmath,amsthm}
+\newtheorem{thm}{Theorem}[section]
+\begin{document}
+Now that we have defined our problem it behooves us to determine what complexity class it is in. The problem of determining the chromatic number of a graph (i.e. the minimum number of different colors that can be assigned to a graph's vertices so that no two adjacent vertices share the same color) is NP-Hard and the corresponding decision problem asking if a certain graph admits a $k$-coloring is NP-Complete when $k \ge 3$ \cite{garey76_2}. We will provide a reduction of Graph $k$-Colorability to CTTD.
+\begin{thm}
+CTTD is NP-Complete if $|H| \ge 3$.
+\end{thm}
+\begin{proof}
+Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD, and so CTTD is NP-Complete.
+\end{proof}
+
+\begin{thebibliography}{9}
+\bibitem{garey76_2}
+  Garey, M., D. Johnson, and L. Stockmeyer. 1976. Some simplified NP-Complete graph problems. Theoretical Computer Science 1: 237-267
+\end{thebibliography}
+\end{document}
