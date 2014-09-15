@@ -95,7 +95,9 @@ Now that we have defined our problem it behooves us to determine what complexity
 CTTD is NP-Complete if $|H| \ge 3$.
 \end{thm}
 \begin{proof}
-Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD, and so CTTD is NP-Complete.
+We first note that CTTD $\in$ NP. The function $f$ is a certificate of size $nm|H|$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
+
+Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD (easily computed in polynomial time). If an algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). Then, for any two presentations  
 \end{proof}
 
 \subsection{Extended Convention Timetable Decision Problem}
