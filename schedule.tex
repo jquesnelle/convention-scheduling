@@ -20,7 +20,7 @@
 
 %opening
 \title{Complexity and integer programming models of convention scheduling problems}
-\author{Jeffrey Quesnelle}
+\author{Jeffrey Quesnelle, Daniel Steffy}
 
 \begin{document}
 
@@ -97,7 +97,7 @@ CTTD is NP-Complete if $|H| \ge 3$.
 \begin{proof}
 We first note that CTTD $\in$ NP. The function $f$ is a certificate of size $nm|H|$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
 
-Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD (easily computed in polynomial time). 
+Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD (whose construction was easily computed in polynomial time). 
 
 If an algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). But, requirement (c) ensures that in this case $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). Finally, for any two adjacent vertices $v_j, v_{j'}$ each will have a different color $h$ by requirement (d).
 
@@ -131,10 +131,10 @@ CTTD ensures that each presenter is correctly scheduled for their presentations 
 		\end{enumerate}
 \end{quote}
 \begin{lem}
-ECTTD is NP-Complete.
+ECTTD is NP-Complete when $|H| \ge 3$.
 \end{lem}
 \begin{proof}
-Let $L=(H,P,T,G)$ be an instance of CTTD. Let $R=T$, $A=\{H,H,\cdots,H\}$ with $|A|=R$ (i.e. each $A_k=H$), and  likewise let
+Let $L=(H,P,T,G)$ be an instance of CTTD. Let $R=T$, $A=\{H,H,\cdots,H\}$ with $|A|=R$ (i.e. each $A_k=H$), and  likewise let $S=\{H,H,\cdots,H\}$ with $|S|=|T|$. We now have an instance $L'=(H,P,T,G,R,A,S)$ of ECTTD (we note with slight amusement the embedded GRAPHS anagram). As with CTTD if an algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d).
 \end{proof}
 
 \section{Linear programming models}
