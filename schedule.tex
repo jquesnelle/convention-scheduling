@@ -90,9 +90,9 @@ Although TTD solves a core portion of the problem, the requirements of a convent
 		\item $G_{ij} > 0 \land G_{i'j} > 0 \Rightarrow f(i,j,h)=f(i',j,h)$ for all $1 \le i,i' \le n$, $1 \le j \le m$ and $h \in H$ (all presenters that are required to give a talk must be present at all instances of that talk);
 	\end{enumerate}
 \end{quote}
-Now that we have defined our problem it behooves us to determine what complexity class it is in. The problem of determining the chromatic number of a graph (i.e. the minimum number of different colors that can be assigned to a graph's vertices so that no two adjacent vertices share the same color) is NP-Hard and the corresponding decision problem asking if a certain graph admits a $k$-coloring is NP-Complete when $k \ge 3$ \cite{garey76_2}. We will provide a reduction of Graph $k$-Colorability to CTTD.
+Now that we have defined our problem it behooves us to determine what complexity class it is in. The problem of determining the chromatic number of a graph (i.e. the minimum number of different colors that can be assigned to a graph's vertices so that no two adjacent vertices share the same color) is NP-Hard and the corresponding decision problem asking if a certain graph admits a $k$-coloring is NP-Complete \cite{garey76_2}. We will provide a reduction of Graph $k$-Colorability to CTTD.
 \begin{thm}
-CTTD is NP-Complete if $|H| \ge 3$.
+CTTD is NP-Complete.
 \end{thm}
 \begin{proof}
 We first note that CTTD $\in$ NP. The function $f$ is a certificate of size $nm|H|$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
@@ -101,7 +101,7 @@ Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots,
 
 If an algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). But, requirement (c) ensures that in this case $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). Finally, for any two adjacent vertices $v_j, v_{j'}$ each will have a different color $h$ by requirement (d).
 
-In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is NP-Complete when $k \ge 3$, CTTD is NP-Complete.
+In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is NP-Complete, CTTD is NP-Complete.
 \end{proof}
 
 \subsection{Extended Convention Timetable Decision Problem}
@@ -131,7 +131,7 @@ CTTD ensures that each presenter is correctly scheduled for their presentations 
 		\end{enumerate}
 \end{quote}
 \begin{lem}
-ECTTD is NP-Complete when $|H| \ge 3$.
+ECTTD is NP-Complete.
 \end{lem}
 \begin{proof}
 Let $L=(H,P,T,G)$ be an instance of CTTD. Let $R=T$, $A=\{H,H,\cdots,H\}$ with $|A|=R$ (i.e. each $A_k=H$), and  likewise let $S=\{H,H,\cdots,H\}$ with $|S|=|T|$. We now have an instance $L'=(H,P,T,G,R,A,S)$ of ECTTD (we note with slight amusement the embedded GRAPHS anagram). As with CTTD if an algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d).
