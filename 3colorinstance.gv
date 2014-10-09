@@ -1,0 +1,15 @@
+graph cttd { 
+graph [rankdir=LR];
+
+"v1" [label=<v<SUB>1</SUB>>];
+"v2" [label=<v<SUB>2</SUB>>];
+"v3" [label=<v<SUB>3</SUB>>];
+"v4" [label=<v<SUB>4</SUB>>];
+"v5" [label=<v<SUB>5</SUB>>];
+
+"v1" -- "v2" [label=<e<SUB>1</SUB>>];
+"v1" -- "v3" [label=<e<SUB>2</SUB>>];
+"v2" -- "v3" [label=<e<SUB>3</SUB>>];
+"v3" -- "v4" [label=<e<SUB>4</SUB>>];
+"v4" -- "v5" [label=<e<SUB>5</SUB>>];
+}

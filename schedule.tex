@@ -2,6 +2,7 @@
 \usepackage[total={6in,9in},top=1in, left=1in, right=1in, bottom=1in]{geometry}
 \usepackage{enumerate}
 \usepackage{amssymb,amsmath,amsthm}
+\usepackage{graphicx}
 % \usepackage{mathtools} 
 
 % ----------------------------------------------------------------
@@ -32,7 +33,7 @@ The problem of determining if there is a feasible schedule for a convention give
 
 \section{Introduction}
 
-The authors of this paper were working on developing a website for a local science fiction called Penguicon. Part of the scope for the website involved developing a scheduling portion; various talks and presenters needed to be scheduled into the limited programming space and time so as to ensure no presenter had dual-bookings. Furthermore, the website gave the ability for attendees to ``RSVP" to events before-hand, giving the extra complication of trying to generate the schedule that minimized conflicts amongst presentations attendees had previously indicated they were interested in.
+The authors of this paper were working on developing a website for a local science fiction. Part of the scope for the website involved developing a scheduling portion; various talks and presenters needed to be scheduled into the limited programming space and time so as to ensure no presenter had dual-bookings. Furthermore, the website gave the ability for attendees to ``RSVP" to events before-hand, giving the extra complication of trying to generate the schedule that minimized conflicts amongst presentations attendees had previously indicated they were interested in.
 
 \subsection{Background and related problems}
 The problem of assigning resources to some tasks given a set of constraints is a problem that has been studied widely in literature and appears often in day-to-day life. A new university student perusing the catalog of scheduled classes would be right to marvel at the ingenuity it takes to align different professor skills, availabilities, and course requirements into a cohesive plan. (Although often their opinion on its ingenuity may vary when inevitably two required courses are only offered concurrently!)  
@@ -42,7 +43,7 @@ One of the oldest scheduling-like problem that has been studied is the \emph{tim
 Unfortunately, classical TTD often doesn't map well onto several common problems such as scheduling courses for a university. Specifically, the requirement that a teacher \emph{must} teach certain classes may be relaxed to describing those classes they are \emph{willing} to teach. This is the Basic Course Scheduling problem (BCS). Perhaps surprisingly, BCS $\in$ P was shown by Lovelace, A. in 2010 \cite{lovelace2010}. Specifically, she first constructed an algorithm to find the optimal schedule, and then used this to give an affirmative yes/no answer to BCS by validating that all classes were indeed scheduled. It appears that our problem sits on the ``boundary" of P and NP; a slight modification of the requirements appears enough to tip it either way. For example, if we extend BCS to include the scheduling of rooms, then this problem (known as the Extended Course Scheduling problem or ECS) is in NP, and the corresponding problem of finding an optimal schedule for ECS is NP-Hard.
 
 \section{Problem descriptions and classes}
-\subsection{Previously studied problems}
+\subsection{Timetable Decision Problem}
 Although the previous discussion regarding BCS and ECS is illuminating, our specific problem of convention scheduling more closely resembles TTD. The precise formulation of TTD is as follows.
 \begin{quote}
 	\textsc{Timetable Decision Problem}
@@ -99,18 +100,15 @@ We first note that CTTD $\in$ NP. The function $f$ is a certificate of size $nm|
 
 Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD (whose construction was easily computed in polynomial time). 
 
-If an algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). But, requirement (c) ensures that in this case $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). Finally, for any two adjacent vertices $v_j, v_{j'}$ each will have a different color $h$ by requirement (d).
+If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). But, requirement (c) ensures that in this case $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). Finally, for any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (d).
 
 In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is NP-Complete, CTTD is NP-Complete.
 \end{proof}
 
 \subsection{Basic Convention TTD Problem}
-Lovelace showed that a relaxed version of TTD (called BCS for ``Basic Course Scheduling") can be solved in polynomial time using a network flow model \cite{lovelace2010}. The principal differences between BCS and TTD are the reduction of many ``hard" requirements such as those insisting that a presenter give \emph{exactly} a certain number of talks of a certain type to simply saying they may give \emph{at most} a number of talks for which they are \emph{willing} to give. BCS does maintain a hard requirement that all presentations must be scheduled (otherwise simply not holding the convention at all would be a feasible solution!), it simply is less picky on who exactly does the presenting.
-
-The difference between TTD and CTTD is the ability for presentations to have multiple presenters, and the requirement that all presenters be scheduled for all instances of a talk. Likewise, we can formulate a modified version of BCS that incorporates this new constraint which we will call the Basic Convention Timetable Decision problem (BCTTD). 
-
+Lovelace showed that a relaxed version of TTD (called BCS for ``Basic Course Scheduling") can be solved in polynomial time using a network flow model \cite{lovelace2010}. The principal differences between BCS and TTD are the reduction of many ``hard" requirements such as those insisting that a presenter give \emph{exactly} a certain number of talks of a certain type to simply saying they may give \emph{at most} a number of talks for which they are \emph{willing} to give. BCS does maintain a hard requirement that all presentations must be scheduled (otherwise simply not holding the convention at all would be a feasible solution!), it simply is less picky on who exactly does the presenting. We formulate BCS in terms our previously used nomenclature as the Basic Timetable Decision Problem (BTTD).
 \begin{quote}
-	\textsc{Basic Convention Timetable Decision Problem}
+	\textsc{Basic Timetable Decision Problem}
 	
 	\underline{INSTANCE}:
 		\begin{enumerate}
@@ -128,38 +126,68 @@ The difference between TTD and CTTD is the ability for presentations to have mul
 		(where $f(i,j,h)=1$ if and only if presenter $i$ gives talk $j$ during hour $h$) such that
 		\begin{enumerate}[(a)]
 			\item $f(i,j,h) = 1 \Rightarrow h \in P_i \cap T_j$ (the presenter and talk are both available to be scheduled at hour $h$);
-			\item $\sum\limits_{h \in H} f'(j,h) = S(j)$ for all $1 \le j \le m$ where $f'(j,h) = 1 \iff \exists i \text{ with } 1 \le i \le n$ such that $f(i,j,h)=1$, and 0 otherwise (the $j$th talk the required number of times);
-			\item $WTP(i,j) = WTP(i',j) \Rightarrow f(i,j,h)=f(i',j,h)$ for all $1 \le i,i' \le n$, $1 \le j \le m$ and $h \in H$ (all presenters that are required to give a talk must be present at all instances of that talk);
+			\item $\sum\limits_{h \in H} f'(j,h) = S(j)$ for all $1 \le j \le m$ where $f'(j,h) = 1 \iff \exists i \text{ with } 1 \le i \le n$ such that $f(i,j,h)=1$, and 0 otherwise (the $j$th talk is given the required number of times);
+			\item $\sum\limits_{j=1}^{m} f(i,j,h) \le 1$ for all $1 \le i \le n$ and $h \in H$ (there is no more than one presenter scheduled for each instance of a talk);
 			\item $f(i,j,h) = 1 \Rightarrow WTP(i,j) = 1$ (only presenters willing to give a talk are scheduled for it);
 			\item $\sum\limits_{j=1}^n\sum\limits_{h \in H} f(i,j,h) \le L(i)$ for all $1 \le i \le n$ (the total number of talks that the $i$th presenter is scheduled for is at most their maximum number of presentations)
 			\item $\sum\limits_{j=1}^m f(i,j,h) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously).
 		\end{enumerate}
 \end{quote}
-
-We will show that BCTTD $\in$ P by creating a network flow whose maximum flow will solve the corresponding optimization problem. We will then validate that the optimal solution indeed schedules all talks. To this end we present the related optimization problem of BCTTD: the Basic Convention Optimization problem (BCO).
-
+\begin{rem}
+BTTD $\in$ P \cite{lovelace2010}.
+\end{rem}
+The difference between TTD and CTTD is the ability for presentations to have multiple presenters, and the requirement that all presenters be scheduled for all instances of a talk. Likewise, we can formulate a modified version of BTTD that incorporates this new constraint which we will call the Basic Convention Timetable Decision problem (BCTTD). 
 \begin{quote}
-	\textsc{Basic Convention Optimiziation Problem}
+	\textsc{Basic Convention Timetable Decision Problem}
 	
-	Same as BCTTD, but with \underline{QUESTION} changed to \\
-	\underline{GOAL:} Find a function
-	\begin{gather*}
-		f(i,j,h) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \rightarrow \{0,1\}
-	\end{gather*}
-	which maximizes 
-	\begin{gather*}
-		\sum\limits_{i=1}^{n}\sum\limits_{j=1}^{m}\sum\limits_{h \in H} f(i,j,h)
-	\end{gather*}
-	subject to the constraints of BCTTD with constraint (b) removed.
+	Same as BTTD, but with constraint (c) changed to
+	\begin{enumerate}[(c)]
+		\item $WTP(i,j) = WTP(i',j) \Rightarrow f(i,j,h)=f(i',j,h)$ for all $1 \le i,i' \le n$, $1 \le j \le m$ and $h \in H$ (all presenters that are required to give a talk must be present at all instances of that talk);
+	\end{enumerate}
 \end{quote}
+\begin{thm}
+BCTTD is NP-Complete.
+\end{thm}
+\begin{proof}\label{bcttd_np}
+Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $WTP(l,c')=1$ and $WTP(l,d')=1$. For all $1 \le i \le n$, let $L(i)=2$ and for all $1 \le j \le m$, let $S(j)=1$. We now have an instance $(H,P,T,L,S,WTP)$ of BCTTD.
 
-Constraint (b) of BCTTD ensured that all instances of a talk were indeed scheduled. In BCO we omit this requirement but as we will see the structure of the network will limit the maximum number of talks that can be scheduled to $S(j)$ for the $j$th talk; moreover we will accept BCTTD when this number is exactly $S(j)$ for all $1 \le j \le m$.
+If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-f). As with CTTD we assume (without loss of generality) that $G$ is connected. Then, for any talk $T_j$ (corresponding to vertex $v_j$) by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$ since $S(j)=1$ for all $1 \le j \le m$. If there exist any other $i',h'$ with $f(i',j,h')=1$ then this means that $P_{i'}$ is also scheduled for $T_j$ at $h'$, but since by requirement (d) this tells us that $WTP(i',j)=1$ (and we also have $WTP(i,j)=1$ for the same reason) and thus $WTP(i,j)=WTP(i',h)$ and requirement (c) gives us that $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). For any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (f). Lastly we know that this formulation enumerates all presenters (edges) and talks (vertices) by requirement (e); in particular because $L(i) = 2$ and $\sum_{j=1}^{m} WTP(i,j) = 2$.
+\end{proof}
+Perhaps somewhat surprisingly the mere modification of requirement (c) in BTTD to our stronger version in BCTTD is enough to move the problem from P into NP-Complete.
+\begin{figure}[h]
+\caption{An illustration of a reduction from $k$-Colorability to BCTTD}
+\underline{QUESTION}: Does there following graph admit a 3-color? \\
+\begin{center}
+\includegraphics[scale=0.75]{3colorinstance}
+\end{center}
+From the algorithm in the proof for Theorem \ref{bcttd_np}: \\
+\begin{center}
+\begin{tabular}{ l c r }
+$H=\{1,2,3\}$ & $P=\{H,H,H,H,H\}$ & $T=\{H,H,H,H,H\}$
+\end{tabular}
+\begin{tabular}{ c c }
+$WTP=$ \begin{tabular}{ r | c | c | c | c | c }
+$v_1$ & 1 &   & 1 &   &   \\ \hline
+$v_2$ & 1 & 1 &   &   &   \\ \hline
+$v_3$ &   & 1 & 1 & 1 &   \\ \hline
+$v_4$ &   &   &   & 1 & 1 \\ \hline
+$v_5$ &   &   &   &   & 1 \\ \hline
+      & $p_1$ & $p_2$ & $p_3$ & $p_4$ & $p_5$
+\end{tabular} & 
+\begin{tabular}{ c c }
+$L=$ \begin{tabular}{ c | c | c | c | c }
+2 & 2 & 2 & 2 & 2 \\ \hline
+$p_1$ & $p_2$ & $p_3$ & $p_4$ & $p_5$
+\end{tabular} & $S=$ \begin{tabular}{ c | c | c | c | c }
+1 & 1 & 1 & 1 & 1 \\ \hline
+$t_1$ & $t_2$ & $t_3$ & $t_4$ & $t_5$
+\end{tabular}
+\end{tabular} 
+\end{tabular}
+\end{center}
+An accepting solution to BCTTD:
+\end{figure}
 
-\subsubsection{Flow network for BCO}
-
-A flow network is a directed graph $G=(V,E)$ along with real-valued \emph{capacities} $c_e$ for each edge $e$. There is a single source vertex $e \in V$ with no incoming edges and a single sink vertex $t \in V$ with no outgoing edges. We design our flow network $G^*$ as follows.
-
-We first create our source vertex $s$. We then create talk vertices $t_1,t_2,\cdots,t_m$. Let $A(j)$ be the subset of presenters who give the $j$th talk, i.e. every $i$ such that $WTP(i,j)=1$. For each talk vertex $t_j$ we create an edge from $s$ to $t_j$ with capacity $S(j)|A(j)|$. Next, vertices $t_jh_k$ are created for each $(j,k) \in \{1,2,\cdots,m\} \times H$. We create edges from every vertex $t_j$ to each of the $|H|$ $t_jh_k$ vertices with capacity $|A(j)|$ if $k \in T_j$ and zero otherwise. For each vertex $t_jh_k$ we create vertex $a(j)$ and connect the two with capacity $|A(j)|$.
 
 \subsection{Extended Convention TTD Problem}
 CTTD provides the ``core" of the scheduling problem we investigated; while it remains NP-Complete the problem is a significant enough deviation from canonical TTD that it required a formal proof of its NP-Completeness. We now present a modification to CTTD that consists mainly of additional constraints to certain parameters, but CTTD will be seen as a trivial special case.
