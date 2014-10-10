@@ -3,7 +3,6 @@
 \usepackage{enumerate}
 \usepackage{amssymb,amsmath,amsthm}
 \usepackage{graphicx}
-% \usepackage{mathtools} 
 
 % ----------------------------------------------------------------
 \vfuzz2pt % Don't report over-full v-boxes if over-edge is small
@@ -153,41 +152,74 @@ Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots,
 
 If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-f). As with CTTD we assume (without loss of generality) that $G$ is connected. Then, for any talk $T_j$ (corresponding to vertex $v_j$) by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$ since $S(j)=1$ for all $1 \le j \le m$. If there exist any other $i',h'$ with $f(i',j,h')=1$ then this means that $P_{i'}$ is also scheduled for $T_j$ at $h'$, but since by requirement (d) this tells us that $WTP(i',j)=1$ (and we also have $WTP(i,j)=1$ for the same reason) and thus $WTP(i,j)=WTP(i',j)$ and requirement (c) gives us that $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). For any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (f). Lastly we know that this formulation enumerates all presenters (edges) and talks (vertices) by requirement (e); in particular because $L(i) = 2$ and $\sum_{j=1}^{m} WTP(i,j) = 2$.
 \end{proof}
-Perhaps somewhat surprisingly the mere modification of requirement (c) in BTTD to our stronger version in BCTTD is enough to move the problem from P into NP-Complete.
-\begin{figure}[h]
-\caption{An illustration of a reduction from $k$-Colorability to BCTTD}
-\underline{QUESTION}: Does there following graph admit a 3-color? \\
+Perhaps somewhat surprisingly the mere modification of requirement (c) in BTTD to our stronger version in BCTTD is enough to move the problem from P into NP-Complete. \\
+\begin{center}
+Figure 1: An illustration of a reduction from $k$-Colorability to BCTTD
+\end{center}
+\underline{QUESTION}: Does there following graph admit a 3-color?
 \begin{center}
 \includegraphics[scale=0.75]{3colorinstance}
 \end{center}
-From the algorithm in the proof for Theorem \ref{bcttd_np}: \\
+From the construction in the proof for Theorem \ref{bcttd_np}: \\
 \begin{center}
 \begin{tabular}{ l c r }
 $H=\{1,2,3\}$ & $P=\{H,H,H,H,H\}$ & $T=\{H,H,H,H,H\}$
 \end{tabular}
 \begin{tabular}{ c c }
 $WTP=$ \begin{tabular}{ r | c | c | c | c | c }
-$v_1$ & 1 &   & 1 &   &   \\ \hline
-$v_2$ & 1 & 1 &   &   &   \\ \hline
-$v_3$ &   & 1 & 1 & 1 &   \\ \hline
-$v_4$ &   &   &   & 1 & 1 \\ \hline
-$v_5$ &   &   &   &   & 1 \\ \hline
-      & $p_1$ & $p_2$ & $p_3$ & $p_4$ & $p_5$
+$v_1$ & 1 & 1 & 0 & 0 & 0 \\ \hline
+$v_2$ & 1 & 0 & 1 & 0 & 0 \\ \hline
+$v_3$ & 0 & 1 & 1 & 1 & 0 \\ \hline
+$v_4$ & 0 & 0 & 0 & 1 & 1 \\ \hline
+$v_5$ & 0 & 0 & 0 & 0 & 1 \\ \hline
+      & $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
 \end{tabular} & 
 \begin{tabular}{ c c }
 $L=$ \begin{tabular}{ c | c | c | c | c }
 2 & 2 & 2 & 2 & 2 \\ \hline
-$p_1$ & $p_2$ & $p_3$ & $p_4$ & $p_5$
+$e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
 \end{tabular} & $S=$ \begin{tabular}{ c | c | c | c | c }
 1 & 1 & 1 & 1 & 1 \\ \hline
-$t_1$ & $t_2$ & $t_3$ & $t_4$ & $t_5$
+$v_1$ & $v_2$ & $v_3$ & $v_4$ & $v_5$
 \end{tabular}
 \end{tabular} 
 \end{tabular}
 \end{center}
-An accepting solution to BCTTD:
-\end{figure}
-
+An accepting solution to BCTTD: \\
+\begin{center}
+$f=$
+\begin{tabular}{ c c c }
+\begin{tabular}{r | c | c | c | c | c}
+$v_1$ & 1 & 1 & 0 & 0 & 0 \\ \hline
+$v_2$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+$v_3$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+$v_4$ & 0 & 0 & 0 & 1 & 1 \\ \hline
+$v_5$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+      & $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+\end{tabular} & 
+\begin{tabular}{r | c | c | c | c | c}
+$v_1$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+$v_2$ & 1 & 0 & 1 & 0 & 0 \\ \hline
+$v_3$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+$v_4$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+$v_5$ & 0 & 0 & 0 & 0 & 1 \\ \hline
+      & $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+\end{tabular} & 
+\begin{tabular}{r | c | c | c | c | c}
+$v_1$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+$v_2$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+$v_3$ & 0 & 1 & 1 & 1 & 0 \\ \hline
+$v_4$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+$v_5$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+      & $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+\end{tabular} \\
+$h=1$ & $h=2$ & $h=3$
+\end{tabular}
+\end{center}
+Which gives rise to the coloring (colors represented as filled, solid, and dashed vertices):
+\begin{center}
+\includegraphics[scale=0.75]{3colorinstancecolored}
+\end{center}
 
 \subsection{Extended Convention TTD Problem}
 CTTD provides the ``core" of the scheduling problem we investigated; while it remains NP-Complete the problem is a significant enough deviation from canonical TTD that it required a formal proof of its NP-Completeness. We now present a modification to CTTD that consists mainly of additional constraints to certain parameters, but CTTD will be seen as a trivial special case.
