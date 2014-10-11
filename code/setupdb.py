@@ -27,7 +27,7 @@ def make_db(db_path):
     conn.commit()
     conn.close()
 
-def main(xml_path):
+def setup_db(xml_path):
     db_path = xml_path + '.db'
     make_db(db_path)
     conn = sqlite3.connect(db_path)
