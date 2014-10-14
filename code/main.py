@@ -17,14 +17,20 @@ import sys
 
 def main():
     for i in range(1, len(sys.argv)):
-        if sys.argv[i] == '--generate-db':
-            from setupdb import setup_db
-            setup_db(sys.argv[i+1])
+        if sys.argv[i].startswith('--generate-db'):
+            from generatedb import generate_db
+            generate_db(sys.argv[i+1], sys.argv[i].endswith('-full'))
             i += 2
         elif sys.argv[i].startswith('--make-multi-presenter-graph'):
             from multipresentgraph import multi_presenter_graph
             multi_presenter_graph(sys.argv[i+1], sys.argv[i].endswith('-labels'))
             i += 2
+        elif sys.argv[i] == '--generate-report':
+            from generatereport import generate_report
+            generate_report(sys.argv[i+1])
+            i += 2
+        elif sys.argv[i] == '--setup-db':
+            pass
         else:
             print 'Unknown option: ' + sys.argv[i]
             i += 1

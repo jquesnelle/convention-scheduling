@@ -255,6 +255,23 @@ Let $L=(H,P,T,G)$ be an instance of CTTD. Let $R=T$, $A=\{H,H,\cdots,H\}$ with $
 \end{proof}
 
 \subsection{Preference Convention Optimization Problem}
+We have examined several different variations of scheduling problems as they relate to conventions; we now offer a final variation that will be the subject of study for the rest of the paper. In particular we are interested in not only finding an acceptable schedule but also a schedule that minimizes ``conflicts" to convention attendees. To this end, we will add a new piece of data to the puzzle, namely a set of convention attendees and their preferences for talks they would like to attend. Armed with this information we can attempt to find not only a schedule that meets the requirements of rooms, presenters, etc. but also one that is most acceptable to the attendees. We call this the Preference Convention Optimization problem (PCO).
+\begin{quote}
+	\textsc{Preference Convention Optimization Problem}
+	
+	\underline{INSTANCE}: Same as ECTTD, but with the additional parameters:
+	\begin{enumerate}[1.]
+		\setcounter{enumi}{7}
+		\item a finite set $E = \{e_1, e_2, \cdots, e_t\}$ of attendees;
+		\item a $t \times m$ 0-1 matrix ($W_{ej}$ indicates if the $e$th attendee would like to attend the $j$th talk).
+	\end{enumerate}
+	
+	\underline{GOAL}: Find a function 
+	\begin{gather*}
+		f(i,j,h) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \rightarrow \{0,1\}
+	\end{gather*}
+	that minimizes the number of conflicts to the $W$ matrix subject to the constraints in ECTTD. We define a conflict as occurring when $f(i,j,h)=1, f(i',j',h)=1$ and there exists an $e$ such that $W_{ej}=1$ and $W_{ej'}=1$.
+\end{quote}
 
 \section{Integer programming models}
 

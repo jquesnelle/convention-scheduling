@@ -1,6 +1,6 @@
 CREATE TABLE presenters (pid INTEGER PRIMARY KEY, name VARCHAR);
 CREATE TABLE talks (tid INTEGER PRIMARY KEY, name VARCHAR, description VARCHAR);
-CREATE TABLE hours (hid INTEGER PRIMARY KEY, start_time DATETIME, end_time DATETIME);
+CREATE TABLE hours (hid INTEGER PRIMARY KEY, time DATETIME);
 CREATE TABLE rooms (rid INTEGER PRIMARY KEY, name VARCHAR);
 CREATE TABLE gives_talk (pid INTEGER, tid INTEGER, FOREIGN KEY(pid) REFERENCES presenters(pid), FOREIGN KEY(tid) REFERENCES talks(tid));
 CREATE TABLE presenter_available (pid INTEGER, hid INTEGER, FOREIGN KEY(pid) REFERENCES presenters(pid), FOREIGN KEY(hid) REFERENCES hours(hid));
@@ -9,3 +9,4 @@ CREATE TABLE room_available (rid INTEGER, hid INTEGER, FOREIGN KEY(rid) REFERENC
 CREATE TABLE room_suitable_for (rid INTEGER, tid INTEGER, FOREIGN KEY(rid) REFERENCES rooms(rid), FOREIGN KEY(tid) REFERENCES talks(tid));
 CREATE TABLE attendee (aid INTEGER PRIMARY KEY);
 CREATE TABLE attendee_interest (aid INTEGER, tid INTEGER, FOREIGN KEY(aid) REFERENCES attendee(aid), FOREIGN KEY(tid) REFERENCES talks(tid));
+CREATE TABLE schedule (tid INTEGER, hid INTEGER, rid INTEGER, FOREIGN KEY(tid) REFERENCES talks(tid), FOREIGN KEY(hid) REFERENCES hours(hid), FOREIGN KEY(rid) REFERENCES rooms(rid));
