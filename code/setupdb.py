@@ -20,5 +20,6 @@ def setup_db(db_path, num_talks, num_attendees, attendees_with_rsvps, num_rsvps)
     c = conn.cursor()
     c.execute('DELETE FROM talks WHERE tid >= ?', (num_talks,))
     c.execute('DELETE FROM gives_talk WHERE tid >= ?', (num_talks,))
+    c.execute('DELETE FROM schedule')
     conn.commit()
     rooms = {}

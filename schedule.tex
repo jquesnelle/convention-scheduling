@@ -268,9 +268,9 @@ We have examined several different variations of scheduling problems as they rel
 	
 	\underline{GOAL}: Find a function 
 	\begin{gather*}
-		f(i,j,h) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \rightarrow \{0,1\}
+		f(i,j,h,r) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \times R \rightarrow \{0,1\}
 	\end{gather*}
-	that minimizes the number of conflicts to the $W$ matrix subject to the constraints in ECTTD. We define a conflict as occurring when $f(i,j,h)=1, f(i',j',h)=1$ and there exists an $e$ such that $W_{ej}=1$ and $W_{ej'}=1$.
+	that minimizes the number of conflicts to the $W$ matrix subject to the constraints in ECTTD. We define a conflict as occurring when $f(i,j,h,r)=1, f(i',j',h,r')=1$ and there exists an $e$ such that $W_{ej}=1$ and $W_{ej'}=1$.
 \end{quote}
 
 \section{Integer programming models}

@@ -56,6 +56,6 @@ def generate_report(db_path):
                 current_hid = int(scheduled[2])
             html.write('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n' %
                       (scheduled[0], scheduled[1], scheduled[4], scheduled[5]))
-        html.write('</table><br/>\n')
+        html.write('</table><br/><body></html>\n')
 
 

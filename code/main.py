@@ -31,6 +31,10 @@ def main():
             i += 2
         elif sys.argv[i] == '--setup-db':
             pass
+        elif sys.argv[i] == '--generate-model':
+            from generatemodel import generate_model
+            generate_model(sys.argv[i+1])
+            i += 2
         else:
             print 'Unknown option: ' + sys.argv[i]
             i += 1

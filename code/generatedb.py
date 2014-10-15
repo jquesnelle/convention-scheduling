@@ -31,7 +31,10 @@ def make_db(db_path):
 
 def generate_db(xml_path, full):
     db_path = xml_path + '.db'
-    os.remove(db_path)
+    try:
+        os.remove(db_path)
+    except:
+        pass
     make_db(db_path)
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
@@ -43,6 +46,8 @@ def generate_db(xml_path, full):
         presenter_to_pid = {}
         room_to_rid = {}
         tid_to_track = {}
+        tid_to_type = {} # from tid to 0 for day/evening, 1 for night
+        type_to_hids = {0: [], 1: []}
         start_time = datetime.datetime(year=2013, month=4, day=26, hour=16)
         end_time = datetime.datetime(year=2013, month=4, day=28, hour=16)
         current_day = start_time.date()
@@ -62,6 +67,7 @@ def generate_db(xml_path, full):
                     current_day = current_day + datetime.timedelta(days=1)
                 current_time = new_time
                 c.execute('INSERT INTO hours VALUES (?, ?)', (hid, datetime.datetime(current_day.year, current_day.month, current_day.day, current_time.hour, current_time.minute, current_time.second, current_time.microsecond)))
+                type_to_hids[0 if 9 <= current_time.hour <= 19 else 1].append(hid)
                 hid += 1
             if section.tag == 'div' and section.attrib['class'] == 'section':
                 name = section[0].text
@@ -87,12 +93,15 @@ def generate_db(xml_path, full):
                     rid += 1
                 if full == True:
                     c.execute('INSERT INTO schedule VALUES (?, ?, ?)', (tid, hid - 1, room_to_rid[room]))
+                tid_to_type[tid] = 0 if 9 <= current_time.hour <= 19 else 1
                 tid_to_track[tid] = track
                 tid += 1
     conn.commit()
     food_rid = -1
     hackerspace_rids = []
     general_rids = []
+    max_hid = hid
+    max_pid = pid
     for room, rid in room_to_rid.iteritems():
         if room == 'Food':
             food_rid = rid
@@ -100,6 +109,9 @@ def generate_db(xml_path, full):
             hackerspace_rids.append(rid)
         else:
             general_rids.append(rid)
+        # for now, all rooms are available all the time
+        for hid_it in range(0, max_hid):
+            c.execute('INSERT INTO room_available VALUES (?, ?)', (rid, hid_it))
     for tid, track in tid_to_track.iteritems():
         if track == 'Food':
             c.execute('INSERT INTO room_suitable_for VALUES (?, ?)', (food_rid, tid))
@@ -109,5 +121,10 @@ def generate_db(xml_path, full):
         else:
             for general_rid in general_rids:
                 c.execute('INSERT INTO room_suitable_for VALUES (?, ?)', (general_rid, tid))
+        for hid in type_to_hids[tid_to_type[tid]]:
+            c.execute('INSERT INTO talk_available VALUES (?, ?)', (tid, hid)) #things that were really scheduled at night can only be at night, and day things can only be during the day
+    for pid_it in range(0, max_pid):
+        for hid_it in range(0, max_hid):
+            c.execute('INSERT INTO presenter_available VALUES (?, ?)', (pid_it, hid_it))
     conn.commit()
     conn.close()
