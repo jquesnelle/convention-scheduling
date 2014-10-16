@@ -5,7 +5,7 @@ echo "Setting up database with $1 talks"
 python main.py --setup-db schedule2013.html.db $1
 echo "Generating model"
 python main.py --generate-model-ecttd schedule2013.html.db
-echo "Solving model 5 times"
+echo "Solving model"
 cbc schedule2013.html.db.lp -solve -solu output.sol
 echo "Importing solution"
 python main.py --import-solution schedule2013.html.db output.sol
