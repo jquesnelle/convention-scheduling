@@ -28,13 +28,18 @@ def generate_model(db_path, type):
     talk_given_by={}
     talk_really_available = {}
     real_availability_of_talks = {}
+    presenter_available = {}
+    talk_available = {}
+    room_available = {}
+
     for gives_talk_row in c.execute('SELECT pid, tid FROM gives_talk'):
         pid = gives_talk_row[0]
         tid = gives_talk_row[1]
         if pid not in gives_talk:
-            gives_talk[pid] = [tid]
-        else:
-            gives_talk[pid].append(tid)
+            gives_talk[pid] = {}
+        if tid not in gives_talk[pid]:
+            gives_talk[pid][tid] = 0
+        gives_talk[pid][tid] += 1
         if tid not in talk_given_by:
             talk_given_by[tid] = [pid]
         else:
@@ -46,54 +51,88 @@ def generate_model(db_path, type):
     g_vars = {}
     constraint_count = 0
 
-    # this will generate the feasible schedule. for any row in this query, pid is available at hid,
-    # tid is available at gid, rid is suitable for tid and tid is available at hid.
-    # by only using these variables, we effectively enforce constraint (a)
-    possible_schedule = c.execute("SELECT gt.pid, gt.tid, h.hid, rs.rid FROM hours h, gives_talk gt, "
-                                  "talk_available ta, room_suitable_for rs, room_available ra WHERE rs.rid=ra.rid "
-                                  "and rs.tid=gt.tid and ra.hid=h.hid and ta.tid=gt.tid and h.hid=ta.hid GROUP BY "
-                                  "gt.pid, gt.tid, h.hid, rs.rid")
-    for possible_schedule_row in possible_schedule:
-        pid = int(possible_schedule_row[0])
-        tid = int(possible_schedule_row[1])
-        hid = int(possible_schedule_row[2])
-        rid = int(possible_schedule_row[3])
+    if not 'naive' in type:
+        # this will generate the feasible schedule. for any row in this query, pid is available at hid,
+        # tid is available at gid, rid is suitable for tid and tid is available at hid.
+        # by only using these variables, we effectively enforce constraint (a)
+        possible_schedule = c.execute("SELECT gt.pid, gt.tid, h.hid, rs.rid FROM hours h, gives_talk gt, "
+                                      "talk_available ta, room_suitable_for rs, room_available ra, "
+                                      "presenter_available pa WHERE rs.rid=ra.rid and rs.tid=gt.tid and ra.hid=h.hid "
+                                      "and ta.tid=gt.tid and h.hid=ta.hid and gt.pid=pa.pid and h.hid=pa.hid GROUP BY "
+                                      "gt.pid, gt.tid, h.hid, rs.rid")
+        for possible_schedule_row in possible_schedule:
+            pid = int(possible_schedule_row[0])
+            tid = int(possible_schedule_row[1])
+            hid = int(possible_schedule_row[2])
+            rid = int(possible_schedule_row[3])
 
-        if pid not in f_vars:
-            f_vars[pid] = {}
-        if tid not in f_vars[pid]:
-            f_vars[pid][tid] = {}
-        if hid not in f_vars[pid][tid]:
-            f_vars[pid][tid][hid] = set()
-        f_vars[pid][tid][hid].add(rid)
+            if pid not in f_vars:
+                f_vars[pid] = {}
+            if tid not in f_vars[pid]:
+                f_vars[pid][tid] = {}
+            if hid not in f_vars[pid][tid]:
+                f_vars[pid][tid][hid] = set()
+            f_vars[pid][tid][hid].add(rid)
 
-        if not tid in talk_really_available:
-            talk_really_available[tid] = {}
-        if not hid in talk_really_available[tid]:
-            talk_really_available[tid][hid] = set()
-        talk_really_available[tid][hid].add(rid)
+            if not tid in talk_really_available:
+                talk_really_available[tid] = {}
+            if not hid in talk_really_available[tid]:
+                talk_really_available[tid][hid] = set()
+            talk_really_available[tid][hid].add(rid)
 
-        if not hid in real_availability_of_talks:
-            real_availability_of_talks[hid] = {}
-        if not rid in real_availability_of_talks[hid]:
-            real_availability_of_talks[hid][rid] = set()
-        real_availability_of_talks[hid][rid].add(tid)
+            if not hid in real_availability_of_talks:
+                real_availability_of_talks[hid] = {}
+            if not rid in real_availability_of_talks[hid]:
+                real_availability_of_talks[hid][rid] = set()
+            real_availability_of_talks[hid][rid].add(tid)
+    else:
+        for presenter_available_row in c.execute('SELECT pid, hid FROM presenter_available'):
+            pid = int(presenter_available_row[0])
+            hid = int(presenter_available_row[1])
+            if not pid in presenter_available:
+                presenter_available[pid] = set()
+            presenter_available[pid].add(hid)
+        for talk_available_row in c.execute('SELECT tid, hid FROM talk_available'):
+            tid = int(talk_available_row[0])
+            hid = int(talk_available_row[1])
+            if not tid in talk_available:
+                talk_available[tid] = set()
+            talk_available[tid].add(hid)
+        for room_available_row in c.execute('SELECT rid, hid FROM room_available'):
+            rid = int(room_available_row[0])
+            hid = int(room_available_row[1])
+            if not rid in room_available:
+                room_available[rid] = set()
+            room_available[rid].add(hid)
 
     with open(db_path + '.lp', 'w') as f:
         f.write('Minimize\nOBJ: ')
 
-        if type == 'ecttd':
-            # Note, this doesn't include the extended f_vars when copresenters have different availabilities -- but as of now this never happens
-            first = True
-            for pid in f_vars.keys():
-                for tid in f_vars[pid].keys():
-                    for hid in f_vars[pid][tid].keys():
-                        for rid in f_vars[pid][tid][hid]:
-                            if first == True:
-                                first = False
-                            else:
-                                f.write(' + ')
-                            f.write('f_p%d_t%d_h%d_r%d' % (pid,tid,hid,rid))
+        if 'ecttd' in type:
+            if not 'naive' in type:
+                # Note, this doesn't include the extended f_vars when copresenters have different availabilities --
+                # but as of now this never happens
+                first = True
+                for pid in f_vars.keys():
+                    for tid in f_vars[pid].keys():
+                        for hid in f_vars[pid][tid].keys():
+                            for rid in f_vars[pid][tid][hid]:
+                                if first == True:
+                                    first = False
+                                else:
+                                    f.write(' + ')
+                                f.write('f_p%d_t%d_h%d_r%d' % (pid,tid,hid,rid))
+            else:
+                first = True
+                for pid in presenters:
+                    for tid in talks:
+                        for hid in hours:
+                            for rid in rooms:
+                                if first == True:
+                                    first = False
+                                else:
+                                    f.write(' + ')
+                                f.write('f_p%d_t%d_h%d_r%d' % (pid,tid,hid,rid))
         else:
             # Minimize "c" which will be matrix of hour x talk x talk -> rsvp conflicts
             total_conflict_vars = 0
@@ -116,157 +155,261 @@ def generate_model(db_path, type):
 
         f.write('\nSubject To\n')
 
+        if 'naive' in type:
+            # constraint (a)
+                for hid in hours:
+                    for pid in presenters:
+                        avail = True
+                        if not hid in presenter_available[pid]:
+                            avail = False
+                            # f.write('\\* Presenter %d is not available at hour %d *\\\n' % (pid, hid))
+                        for tid in talks:
+                            if not hid in talk_available[tid]:
+                                avail = False
+                                # f.write('\\* Talk %d is not available at hour %d *\\\n' % (tid, hid))
+                            for rid in rooms:
+                                if not hid in room_available[rid]:
+                                    avail = False
+                                    # f.write('\\* Room %d is not available at hour %d *\\\n' % (rid, hid))
+                                if avail == False:
+                                    f.write('C%d: f_p%d_t%d_h%d_r%d = 0\n' % (constraint_count, pid,tid,hid,rid))
+                                    constraint_count += 1
 
         # constraint (b)
-        for pid in f_vars.keys():
-            for tid in f_vars[pid].keys():
-                f.write('\\* Presenter %d is only scheduled for talk %d once *\\\n' % (pid, tid))
-                first = True
-                constraint = ''
-                # the mere fact that tid is here means that G_pid,tid=1
-                for hid in f_vars[pid][tid].keys():
-                    for rid in f_vars[pid][tid][hid]:
+        if not 'naive' in type:
+            for pid in f_vars.keys():
+                for tid in f_vars[pid].keys():
+                    talk_instances = gives_talk[pid][tid]
+                    f.write('\\* Presenter %d is scheduled for talk %d exactly %d times *\\\n' % (pid, tid, talk_instances))
+                    first = True
+                    constraint = ''
+                    for hid in f_vars[pid][tid].keys():
+                        for rid in f_vars[pid][tid][hid]:
+                            if first == True:
+                                first = False
+                            else:
+                                constraint += ' + '
+                            constraint += 'f_p%d_t%d_h%d_r%d' % (pid,tid,hid,rid)
+                    if first == True:
+                        constraint += '0'
+                    constraint += ' = %d\n' % (talk_instances,)
+                    f.write('C%d: %s' % (constraint_count, constraint))
+                    constraint_count += 1
+        else:
+            for pid in presenters:
+                for tid in talks:
+                    if not pid in gives_talk:
+                        continue
+                    if tid in gives_talk[pid]:
+                        talk_instances = gives_talk[pid][tid]
+                        # f.write('\\* Presenter %d is scheduled for talk %d exactly %d times *\\\n' % (pid, tid, talk_instances))
+                        first = True
+                        constraint = ''
+                        for hid in hours:
+                            for rid in rooms:
+                                if first == True:
+                                    first = False
+                                else:
+                                    constraint += ' + '
+                                constraint += 'f_p%d_t%d_h%d_r%d' % (pid,tid,hid,rid)
                         if first == True:
-                            first = False
-                        else:
-                            constraint += ' + '
-                        constraint += 'f_p%d_t%d_h%d_r%d' % (pid,tid,hid,rid)
-                if first == True:
-                    constraint += '0'
-                constraint += ' = 1\n'
-                f.write('C%d: %s' % (constraint_count, constraint))
-                constraint_count += 1
+                            constraint += '0'
+                        constraint += ' = %d\n' % (talk_instances,)
+                        f.write('C%d: %s' % (constraint_count, constraint))
+                        constraint_count += 1
+
+
 
         # constraint (c)
-        for pid_1_it in range(0, len(presenters)):
-            pid_1 = presenters[pid_1_it]
-            if not pid_1 in gives_talk:
-                continue
-            for tid in gives_talk[pid_1]:
-                if len(talk_given_by[tid]) == 1:
-                    continue # single presenter, constraint (c) is inert
-                for pid_2_it in range(0, len(talk_given_by[tid])):
-                    pid_2 = talk_given_by[tid][pid_2_it]
-                    if pid_2 <= pid_1:
-                        continue # the arrays are sorted so we know we already dealt with this one
-                    # index by pid_1 for hour and room availability. when we get to pid_2
-                    # if these sets don't have some intersection then this will make the schedule
-                    # infeasible. we may have to slightly expand f_vars in this case
-                    pid1_hours_not_in_pid2 = []
-                    pid2_hours_not_in_pid1 = []
-                    rooms_union = set()
-                    for hid in f_vars[pid_1][tid].keys():
-                        if hid not in f_vars[pid_2][tid].keys():
-                            pid1_hours_not_in_pid2.append(hid)
-                        rooms_union = rooms_union.union(f_vars[pid_1][tid][hid])
-                    for hid in f_vars[pid_2][tid].keys():
-                        if hid not in f_vars[pid_2][tid].keys():
-                            pid2_hours_not_in_pid1.append(hid)
-                        rooms_union = rooms_union.union(f_vars[pid_1][tid][hid])
-                    hours_union = set(f_vars[pid_1][tid].keys()).union(set(f_vars[pid_2][tid].keys()))
-                    # we now know which hours are missing from each presenter
-                    # we will expand f_vars to include these, but explicitly say that they must be zero
-                    for hid in pid1_hours_not_in_pid2:
-                        f.write('\\* Presenter %d and %d share talk %d, but %d is not available at %d, so make sure they can\'t be scheduled then *\\\n' % (pid_1, pid_2, tid, pid_2, hid))
-                        f_vars[pid_2][tid][hid] = rooms_union()
-                        first = True
-                        constraint = ''
-                        for rid in f_vars[pid_2][tid][hid]:
-                            if first == True:
-                                first = False
-                            else:
-                                constraint += ' + '
-                            constraint += 'f_p%d_t%d_h%d_r%d' % (pid_2, tid, hid, rid)
-                        constraint += ' = 0\n'
-                        f.write('C%d: %s' % (constraint_count, constraint))
-                        constraint_count += 1
-                    for hid in pid2_hours_not_in_pid1:
-                        f.write('\\* Presenter %d and %d share talk %d, but %d is not available at %d, so make sure they can\'t be scheduled then *\\\n' % (pid_1, pid_2, tid, pid_1, hid))
-                        f_vars[pid_1][tid][hid] = rooms_union()
-                        first = True
-                        constraint = ''
-                        for rid in f_vars[pid_1][tid][hid]:
-                            if first == True:
-                                first = False
-                            else:
-                                constraint += ' + '
-                            constraint += 'f_p%d_t%d_h%d_r%d' % (pid_1, tid, hid, rid)
-                        constraint += ' = 0\n'
-                        f.write('C%d: %s' % (constraint_count, constraint))
-                        constraint_count += 1
-                    for hid in hours_union:
-                        for rid in rooms_union:
-                            f.write('\\* Presenter %d and %d share talk %d, so they must have the same schedule for for this talk at hour %d in room %d *\\\n' % (pid_1, pid_2, tid, hid, rid))
-                            f.write('C%d: f_p%d_t%d_h%d_r%d - f_p%d_t%d_h%d_r%d = 0\n' % (constraint_count, pid_1, tid, hid, rid, pid_2, tid, hid, rid))
+        if not 'naive' in type:
+            for pid_1_it in range(0, len(presenters)):
+                pid_1 = presenters[pid_1_it]
+                if not pid_1 in gives_talk:
+                    continue
+                for tid in gives_talk[pid_1].keys():
+                    if len(talk_given_by[tid]) == 1:
+                        continue # single presenter, constraint (c) is inert
+                    for pid_2_it in range(0, len(talk_given_by[tid])):
+                        pid_2 = talk_given_by[tid][pid_2_it]
+                        if pid_2 <= pid_1:
+                            continue # the arrays are sorted so we know we already dealt with this one
+                        # index by pid_1 for hour and room availability. when we get to pid_2
+                        # if these sets don't have some intersection then this will make the schedule
+                        # infeasible. we may have to slightly expand f_vars in this case
+                        pid1_hours_not_in_pid2 = []
+                        pid2_hours_not_in_pid1 = []
+                        rooms_union = set()
+                        for hid in f_vars[pid_1][tid].keys():
+                            if hid not in f_vars[pid_2][tid].keys():
+                                pid1_hours_not_in_pid2.append(hid)
+                            rooms_union = rooms_union.union(f_vars[pid_1][tid][hid])
+                        for hid in f_vars[pid_2][tid].keys():
+                            if hid not in f_vars[pid_2][tid].keys():
+                                pid2_hours_not_in_pid1.append(hid)
+                            rooms_union = rooms_union.union(f_vars[pid_1][tid][hid])
+                        hours_union = set(f_vars[pid_1][tid].keys()).union(set(f_vars[pid_2][tid].keys()))
+                        # we now know which hours are missing from each presenter
+                        # we will expand f_vars to include these, but explicitly say that they must be zero
+                        for hid in pid1_hours_not_in_pid2:
+                            f.write('\\* Presenter %d and %d share talk %d, but %d is not available at %d, so make sure they can\'t be scheduled then *\\\n' % (pid_1, pid_2, tid, pid_2, hid))
+                            f_vars[pid_2][tid][hid] = rooms_union()
+                            first = True
+                            constraint = ''
+                            for rid in f_vars[pid_2][tid][hid]:
+                                if first == True:
+                                    first = False
+                                else:
+                                    constraint += ' + '
+                                constraint += 'f_p%d_t%d_h%d_r%d' % (pid_2, tid, hid, rid)
+                            constraint += ' = 0\n'
+                            f.write('C%d: %s' % (constraint_count, constraint))
                             constraint_count += 1
+                        for hid in pid2_hours_not_in_pid1:
+                            f.write('\\* Presenter %d and %d share talk %d, but %d is not available at %d, so make sure they can\'t be scheduled then *\\\n' % (pid_1, pid_2, tid, pid_1, hid))
+                            f_vars[pid_1][tid][hid] = rooms_union()
+                            first = True
+                            constraint = ''
+                            for rid in f_vars[pid_1][tid][hid]:
+                                if first == True:
+                                    first = False
+                                else:
+                                    constraint += ' + '
+                                constraint += 'f_p%d_t%d_h%d_r%d' % (pid_1, tid, hid, rid)
+                            constraint += ' = 0\n'
+                            f.write('C%d: %s' % (constraint_count, constraint))
+                            constraint_count += 1
+                        for hid in hours_union:
+                            for rid in rooms_union:
+                                f.write('\\* Presenter %d and %d share talk %d, so they must have the same schedule for for this talk at hour %d in room %d *\\\n' % (pid_1, pid_2, tid, hid, rid))
+                                f.write('C%d: f_p%d_t%d_h%d_r%d - f_p%d_t%d_h%d_r%d = 0\n' % (constraint_count, pid_1, tid, hid, rid, pid_2, tid, hid, rid))
+                                constraint_count += 1
+        else:
+            for pid_1 in presenters:
+                for pid_2 in presenters:
+                    if pid_2 <= pid_1:
+                        continue
+                    for tid in talks:
+                        if pid_1 in talk_given_by[tid] and pid_2 in talk_given_by[tid]:
+                            for hid in hours:
+                                for rid in rooms:
+                                    # f.write('\\* Presenter %d and %d share talk %d, so they must have the same schedule for for this talk at hour %d in room %d *\\\n' % (pid_1, pid_2, tid, hid, rid))
+                                    f.write('C%d: f_p%d_t%d_h%d_r%d - f_p%d_t%d_h%d_r%d = 0\n' % (constraint_count, pid_1, tid, hid, rid, pid_2, tid, hid, rid))
+                                    constraint_count += 1
 
         # constraint (d)
-        for pid in f_vars.keys():
-            for hid in hours:
-                first = True
-                constraint = ''
-                for tid in f_vars[pid].keys():
-                    if hid not in f_vars[pid][tid].keys():
-                        continue
-                    for rid in f_vars[pid][tid][hid]:
-                        if first == True:
-                            first = False
-                        else:
-                            constraint += ' + '
-                        constraint += 'f_p%d_t%d_h%d_r%d' % (pid, tid, hid, rid)
-                if first == False:
-                    f.write('\\* Presenter %d can only give at most one talk at hour %d *\\\n' % (pid, hid))
-                    f.write('C%d: %s <= 1\n' % (constraint_count, constraint))
-                    constraint_count += 1
+        if not 'naive' in type:
+            for pid in f_vars.keys():
+                for hid in hours:
+                    first = True
+                    constraint = ''
+                    for tid in f_vars[pid].keys():
+                        if hid not in f_vars[pid][tid].keys():
+                            continue
+                        for rid in f_vars[pid][tid][hid]:
+                            if first == True:
+                                first = False
+                            else:
+                                constraint += ' + '
+                            constraint += 'f_p%d_t%d_h%d_r%d' % (pid, tid, hid, rid)
+                    if first == False:
+                        # f.write('\\* Presenter %d can only give at most one talk at hour %d *\\\n' % (pid, hid))
+                        f.write('C%d: %s <= 1\n' % (constraint_count, constraint))
+                        constraint_count += 1
+        else:
+            for pid in presenters:
+                for hid in hours:
+                    first = True
+                    constraint = ''
+                    for tid in talks:
+                        for rid in rooms:
+                            if first == True:
+                                first = False
+                            else:
+                                constraint += ' + '
+                            constraint += 'f_p%d_t%d_h%d_r%d' % (pid, tid, hid, rid)
+                    if first == False:
+                        #f.write('\\* Presenter %d can only give at most one talk at hour %d *\\\n' % (pid, hid))
+                        f.write('C%d: %s <= 1\n' % (constraint_count, constraint))
+                        constraint_count += 1
+
 
         # constraint (e)
         # We use a bool cast/implication trick to make g : talk x hour x room -> 0,1 == 1 <=> the jth talk is being given at hour h in room r
         upper_bound = 2 * len(presenters) * len(rooms) * len(talks)
-        for tid in talks:
-            for hid in talk_really_available[tid].keys():
-                for rid in talk_really_available[tid][hid]:
+        if not 'naive' in type:
+            for tid in talks:
+                for hid in talk_really_available[tid].keys():
+                    for rid in talk_really_available[tid][hid]:
+                        first = True
+                        constraint = ''
+                        for pid in talk_given_by[tid]:
+
+                            # Our previous code created the union of possibly nonequal hid/rid combos for copresenters
+                            # So, we know f_vars really has this varirable -- the following code asserts this
+                            a = rid in f_vars[pid][tid][hid]
+                            if a == False:
+                                raise 'Inconsistent f_vars'
+
+                            if not tid in g_vars:
+                                g_vars[tid] = {}
+                            if not hid in g_vars[tid]:
+                                g_vars[tid][hid] = set()
+                            g_vars[tid][hid].add(rid)
+                            if first == True:
+                                first = False
+                            else:
+                                constraint += ' + '
+                            constraint += 'f_p%d_t%d_h%d_r%d' % (pid,tid,hid,rid)
+                        constraint += ' - %d g_t%d_h%d_r%d <= 0' % (upper_bound,tid,hid,rid)
+                        f.write('\\* Sum the presenter entries for talk %d at hour %d in room %d; creates g *\\\n' % (tid, hid, rid))
+                        f.write('C%d: %s\n' % (constraint_count, constraint))
+                        constraint_count += 1
+            for hid in real_availability_of_talks.keys():
+                for rid in real_availability_of_talks[hid].keys():
                     first = True
                     constraint = ''
-                    for pid in talk_given_by[tid]:
-
-                        # Our previous code created the union of possibly nonequal hid/rid combos for copresenters
-                        # So, we know f_vars really has this varirable -- the following code asserts this
-                        a = rid in f_vars[pid][tid][hid]
+                    for tid in real_availability_of_talks[hid][rid]:
+                        # assert the consistency of g
+                        a = rid in g_vars[tid][hid]
                         if a == False:
-                            raise 'Inconsistent f_vars'
-
-                        if not tid in g_vars:
-                            g_vars[tid] = {}
-                        if not hid in g_vars[tid]:
-                            g_vars[tid][hid] = set()
-                        g_vars[tid][hid].add(rid)
+                            raise 'Inconsistent g_vars'
                         if first == True:
                             first = False
                         else:
                             constraint += ' + '
-                        constraint += 'f_p%d_t%d_h%d_r%d' % (pid,tid,hid,rid)
-                    constraint += ' - %d g_t%d_h%d_r%d <= 0' % (upper_bound,tid,hid,rid)
-                    f.write('\\* Sum the presenter entries for talk %d at hour %d in room %d; creates g *\\\n' % (tid, hid, rid))
-                    f.write('C%d: %s\n' % (constraint_count, constraint))
+                        constraint += 'g_t%d_h%d_r%d' % (tid,hid,rid)
+                    f.write('\\* Of all talks that can be scheduled at hour %d in room %d, at most 1 is *\\\n' % (hid, rid))
+                    f.write('C%d: %s <= 1\n' % (constraint_count, constraint))
                     constraint_count += 1
-        for hid in real_availability_of_talks.keys():
-            for rid in real_availability_of_talks[hid].keys():
-                first = True
-                constraint = ''
-                for tid in real_availability_of_talks[hid][rid]:
-                    # assert the consistency of g
-                    a = rid in g_vars[tid][hid]
-                    if a == False:
-                        raise 'Inconsistent g_vars'
-                    if first == True:
-                        first = False
-                    else:
-                        constraint += ' + '
-                    constraint += 'g_t%d_h%d_r%d' % (tid,hid,rid)
-                f.write('\\* Of all talks that can be scheduled at hour %d in room %d, at most 1 is *\\\n' % (hid, rid))
-                f.write('C%d: %s <= 1\n' % (constraint_count, constraint))
-                constraint_count += 1
-
+        else:
+            for tid in talks:
+                for hid in hours:
+                    for rid in rooms:
+                        first = True
+                        constraint = ''
+                        for pid in presenters:
+                            if first == True:
+                                first = False
+                            else:
+                                constraint += ' + '
+                            constraint += 'f_p%d_t%d_h%d_r%d' % (pid,tid,hid,rid)
+                        constraint += ' - %d g_t%d_h%d_r%d <= 0' % (upper_bound,tid,hid,rid)
+                        # f.write('\\* Sum the presenter entries for talk %d at hour %d in room %d; creates g *\\\n' % (tid, hid, rid))
+                        f.write('C%d: %s\n' % (constraint_count, constraint))
+                        constraint_count += 1
+            for hid in hours:
+                for rid in rooms:
+                    first = True
+                    constraint = ''
+                    for tid in talks:
+                        if first == True:
+                            first = False
+                        else:
+                            constraint += ' + '
+                        constraint += 'g_t%d_h%d_r%d' % (tid,hid,rid)
+                    # f.write('\\* Of all talks that can be scheduled at hour %d in room %d, at most 1 is *\\\n' % (hid, rid))
+                    f.write('C%d: %s <= 1\n' % (constraint_count, constraint))
+                    constraint_count += 1
 
 
 
@@ -274,14 +417,25 @@ def generate_model(db_path, type):
 
         # The f and g values are binaries
         f.write('Binaries\n')
-        for pid in f_vars.keys():
-                for tid in f_vars[pid].keys():
-                    for hid in f_vars[pid][tid].keys():
-                        for rid in f_vars[pid][tid][hid]:
-                            f.write('f_p%d_t%d_h%d_r%d\n' % (pid,tid,hid,rid))
-        for tid in g_vars.keys():
-            for hid in g_vars[tid].keys():
-                for rid in g_vars[tid][hid]:
-                    f.write('g_t%d_h%d_r%d\n' % (tid,hid,rid))
+        if not 'naive' in type:
+            for pid in f_vars.keys():
+                    for tid in f_vars[pid].keys():
+                        for hid in f_vars[pid][tid].keys():
+                            for rid in f_vars[pid][tid][hid]:
+                                f.write('f_p%d_t%d_h%d_r%d\n' % (pid,tid,hid,rid))
+            for tid in g_vars.keys():
+                for hid in g_vars[tid].keys():
+                    for rid in g_vars[tid][hid]:
+                        f.write('g_t%d_h%d_r%d\n' % (tid,hid,rid))
+        else:
+            for pid in presenters:
+                    for tid in talks:
+                        for hid in hours:
+                            for rid in rooms:
+                                f.write('f_p%d_t%d_h%d_r%d\n' % (pid,tid,hid,rid))
+            for tid in talks:
+                for hid in hours:
+                    for rid in rooms:
+                        f.write('g_t%d_h%d_r%d\n' % (tid,hid,rid))
 
         f.write('End\n')
