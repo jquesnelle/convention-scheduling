@@ -54,7 +54,7 @@ Although the previous discussion regarding BCS and ECS is illuminating, our spec
 		\item a collection $T = \{T_1, T_2, \cdots, T_m\}$, where $T_j \subseteq H$ (there are $m$ talks and $T_j$ is the set of hours during which the $j$th talk can be given);
 		\item an $n \times m$ matrix $G$ of nonnegative integers ($G_{ij}$ is the number of hours (times) which the $i$th presenter will give the $j$th talk).
 	\end{enumerate}
-	\underline{QUESTION}: Does there exist a meeting function 
+	\underline{QUESTION}: Does there exist a function 
 	\begin{gather*}
 		f(i,j,h) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \rightarrow \{0,1\}
 	\end{gather*}
@@ -118,7 +118,7 @@ Lovelace showed that a relaxed version of TTD (called BCS for ``Basic Course Sch
 			\item a function $S : \mathbb Z^+ \rightarrow \mathbb Z_0^+$, where $S(m)$ is the desired number of instances of the $m$th presentation;
 			\item a function $WTP : \{1,2,\cdots, n\} \times \{1,2,\cdots,m\} \rightarrow \{0,1\}$, where $WTP(i,j)$ indicates if the $i$th presenter is Willing To Present the $j$th talk.
 		\end{enumerate}
-		\underline{QUESTION}: Does there exist a meeting function 
+		\underline{QUESTION}: Does there exist a function 
 		\begin{gather*}
 			f(i,j,h) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \rightarrow \{0,1\}
 		\end{gather*}
@@ -235,7 +235,7 @@ CTTD ensures that each presenter is correctly scheduled for their presentations 
 			\item a collection $\{A_1,A_2,\cdots,A_r\}$, where $A_k \subseteq H$ (there are $r=|R|$ rooms and $A_k$ is the set of hours during which the $k$th room is available);
 			\item a collection $\{S_1,S_2,\cdots,S_m\}$, where $S_l \subseteq R$ (there are $m$ talks and $S_m$ is the set of rooms that the $l$th presentation may be given in)
 		\end{enumerate}
-	\underline{QUESTION}: Does there exist a meeting function 
+	\underline{QUESTION}: Does there exist a function 
 		\begin{gather*}
 			f(i,j,h,r) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \times R \rightarrow \{0,1\}
 		\end{gather*}
@@ -277,12 +277,17 @@ We have examined several different variations of scheduling problems as they rel
 \section{Integer programming models}
 
 \subsection{Overview}
-
-We will present several integer programming models that can solve PCO with varying degrees of efficiency. The data used to measure the models comes from a real convention held in 2013. This convention had 195 presenters giving a total of 291 talks. Figure 2 helps illustrate the data we worked with: each vertex represents a talk and adjacent vertices share a common presenter and cannot be scheduled at the same time. By Theorem \ref{cttd_np} solving to CTTD is equivalent to asking if this graph admits an $h$-color (for some $h$, the number of timeslots available at the convention).
+We will present integer programming models that can solve PCO and ECTTD. The data used to measure the models comes from a real convention held in 2013, which we shall refer to as PC2013. PC2013 had 195 presenters giving a total of 253 talks. Figure 2 helps illustrate the data we worked with: each vertex represents a talk and adjacent vertices share a common presenter and cannot be scheduled at the same time. By Theorem \ref{cttd_np} solving to CTTD is equivalent to asking if this graph admits an $h$-color (for some $h$, the number of timeslots available at the convention).
 \begin{center}
-Figure 2: Presenter conflicts that must be scheduled around \\
+Figure 2: Presenter conflicts that must be scheduled around in PC2013 \\
 \includegraphics[scale=0.2]{penguiconconflict}
 \end{center}
+
+\subsection{ECTTD}
+\begin{center}
+\input ecttd_model_run_time
+\end{center}
+
 
 \begin{thebibliography}{9}
 \bibitem{even76}

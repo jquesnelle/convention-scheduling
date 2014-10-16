@@ -16,28 +16,26 @@
 import sys
 
 def main():
-    for i in range(1, len(sys.argv)):
-        if sys.argv[i].startswith('--generate-db'):
-            from generatedb import generate_db
-            generate_db(sys.argv[i+1], sys.argv[i].endswith('-full'))
-            i += 2
-        elif sys.argv[i].startswith('--make-multi-presenter-graph'):
-            from multipresentgraph import multi_presenter_graph
-            multi_presenter_graph(sys.argv[i+1], sys.argv[i].endswith('-labels'))
-            i += 2
-        elif sys.argv[i] == '--generate-report':
-            from generatereport import generate_report
-            generate_report(sys.argv[i+1])
-            i += 2
-        elif sys.argv[i] == '--setup-db':
-            pass
-        elif sys.argv[i].startswith('--generate-model'):
-            from generatemodel import generate_model
-            generate_model(sys.argv[i+1], sys.argv[i].split('-')[-1])
-            i += 2
-        elif sys.argv[i] == '--import-solution':
-            from importsolution import import_solution
-            import_solution(sys.argv[i+1], sys.argv[i+2])
+    i = 1
+    if sys.argv[i].startswith('--generate-db'):
+        from generatedb import generate_db
+        generate_db(sys.argv[i+1], sys.argv[i].endswith('-full'))
+    elif sys.argv[i].startswith('--make-multi-presenter-graph'):
+        from multipresentgraph import multi_presenter_graph
+        multi_presenter_graph(sys.argv[i+1], sys.argv[i].endswith('-labels'))
+    elif sys.argv[i] == '--generate-report':
+        from generatereport import generate_report
+        generate_report(sys.argv[i+1])
+    elif sys.argv[i].startswith('--generate-model'):
+        from generatemodel import generate_model
+        generate_model(sys.argv[i+1], sys.argv[i].split('-')[-1])
+    elif sys.argv[i] == '--import-solution':
+        from importsolution import import_solution
+        import_solution(sys.argv[i+1], sys.argv[i+2])
+    elif sys.argv[i] == '--setup-db':
+        from setupdb import setup_db
+        if len(sys.argv) == 4:
+            setup_db(sys.argv[i+1], int(sys.argv[i+2]), None, None, None)
 
 if __name__ == '__main__':
     main()

@@ -140,6 +140,8 @@ def generate_model(db_path, type):
         # constraint (c)
         for pid_1_it in range(0, len(presenters)):
             pid_1 = presenters[pid_1_it]
+            if not pid_1 in gives_talk:
+                continue
             for tid in gives_talk[pid_1]:
                 if len(talk_given_by[tid]) == 1:
                     continue # single presenter, constraint (c) is inert
