@@ -9,4 +9,4 @@ CREATE TABLE room_available (rid INTEGER, hid INTEGER);
 CREATE TABLE room_suitable_for (rid INTEGER, tid INTEGER);
 CREATE TABLE attendee (aid INTEGER PRIMARY KEY);
 CREATE TABLE attendee_interest (aid INTEGER, tid INTEGER);
-CREATE TABLE schedule (tid INTEGER, hid INTEGER, rid INTEGER);
+CREATE TABLE schedule (pid INTEGER, tid INTEGER, hid INTEGER, rid INTEGER);

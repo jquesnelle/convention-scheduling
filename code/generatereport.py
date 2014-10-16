@@ -45,7 +45,7 @@ def generate_report(db_path):
 
         schedule = c.execute("SELECT t.tid, t.name, h.hid, h.time, r.rid, r.name FROM "
                              "talks t, schedule s, rooms r, hours h "
-                             "WHERE t.tid == s.tid and r.rid=s.rid and s.hid=h.hid;").fetchall()
+                             "WHERE t.tid == s.tid and r.rid=s.rid and s.hid=h.hid GROUP BY s.tid, s.hid, s.rid ORDER BY h.hid ASC").fetchall()
         current_hid = -1
         for scheduled in schedule:
             if int(scheduled[2]) != current_hid:

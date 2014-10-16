@@ -74,6 +74,8 @@ def generate_db(xml_path, full):
                 track = section[1].text
                 room = section[2].text
                 presenters = section[3][0].text
+                if presenters == 'Open': # We only schedule events with presenters
+                    continue
                 description = section[3][0].tail
                 c.execute('INSERT INTO talks VALUES (?, ?, ?)', (tid, name, description))
                 talk_pids = []
@@ -92,7 +94,8 @@ def generate_db(xml_path, full):
                     room_to_rid[room] = rid
                     rid += 1
                 if full == True:
-                    c.execute('INSERT INTO schedule VALUES (?, ?, ?)', (tid, hid - 1, room_to_rid[room]))
+                    for talk_pid in talk_pids:
+                        c.execute('INSERT INTO schedule VALUES (?, ?, ?, ?)', (talk_pid, tid, hid - 1, room_to_rid[room]))
                 tid_to_type[tid] = 0 if 9 <= current_time.hour <= 19 else 1
                 tid_to_track[tid] = track
                 tid += 1

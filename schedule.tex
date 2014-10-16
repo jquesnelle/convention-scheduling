@@ -244,7 +244,8 @@ CTTD ensures that each presenter is correctly scheduled for their presentations 
 			\item $f(i,j,h,r) = 1 \Rightarrow h \in P_i \cap T_j \cap A_r \land r \in S_j$ (the $i$th presenter, $j$th presentation and room $r$ are all available to be scheduled at hour $h$ and room $r$ is suitable for the $j$th presentation);
 			\item $\sum\limits_{r \in R}\sum\limits_{h \in H} f(i,j,h,r) = G_{ij}$ for all $1 \le i \le n$ and $1 \le j \le m$ (the $i$th presenter was scheduled for the $j$th presentation the required number of times);
 			\item $G_{ij} > 0 \land G_{i'j} > 0 \Rightarrow f(i,j,h,r)=f(i',j,h,r)$ for all $1 \le i,i' \le n$, $1 \le j \le m$, $h \in H$, and $r \in R$ (all presenters that are required to give a talk must be present at all instances of that talk);
-			\item $\sum\limits_{r \in R}\sum\limits_{j=1}^m f(i,j,h,r) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously).
+			\item $\sum\limits_{r \in R}\sum\limits_{j=1}^m f(i,j,h,r) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously);
+			\item $\sum\limits_{j=1}^m f'(j,h,r) \le 1$ for each $h \in H$ and $r \in R$ where $f'(j,h,r) = 1 \iff \exists i \text{ with } 1 \le i \le n$ such that $f(i,j,h,r)=1$, and 0 otherwise (room $r$ is scheduled for at most one talk at hour $h$).
 		\end{enumerate}
 \end{quote}
 \begin{cor}

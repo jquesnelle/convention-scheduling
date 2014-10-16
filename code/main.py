@@ -31,13 +31,13 @@ def main():
             i += 2
         elif sys.argv[i] == '--setup-db':
             pass
-        elif sys.argv[i] == '--generate-model':
+        elif sys.argv[i].startswith('--generate-model'):
             from generatemodel import generate_model
-            generate_model(sys.argv[i+1])
+            generate_model(sys.argv[i+1], sys.argv[i].split('-')[-1])
             i += 2
-        else:
-            print 'Unknown option: ' + sys.argv[i]
-            i += 1
+        elif sys.argv[i] == '--import-solution':
+            from importsolution import import_solution
+            import_solution(sys.argv[i+1], sys.argv[i+2])
 
 if __name__ == '__main__':
     main()
