@@ -35,7 +35,9 @@ def main():
     elif sys.argv[i] == '--setup-db':
         from setupdb import setup_db
         if len(sys.argv) == 4:
-            setup_db(sys.argv[i+1], int(sys.argv[i+2]), None, None, None)
+            setup_db(sys.argv[i+1], int(sys.argv[i+2]), None, None)
+        elif len(sys.argv) == 6:
+            setup_db(sys.argv[i+1], int(sys.argv[i+2]), int(sys.argv[i+3]), int(sys.argv[i+4]))
 
 if __name__ == '__main__':
     main()

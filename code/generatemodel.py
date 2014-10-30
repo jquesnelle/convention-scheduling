@@ -133,7 +133,7 @@ def generate_model(db_path, type):
                                 else:
                                     f.write(' + ')
                                 f.write('f_p%d_t%d_h%d_r%d' % (pid,tid,hid,rid))
-        else:
+        elif 'pco' in type:
             # Minimize "c" which will be matrix of hour x talk x talk -> rsvp conflicts
             total_conflict_vars = 0
             for aid in attendees:
@@ -144,8 +144,7 @@ def generate_model(db_path, type):
                     tid_1 = int(attendee_interests[i][0])
                     for j in range(i + 1, len(attendee_interests)): # the c matrix is symmetric for a given attendee, i.e c_eij = c_eji
                         tid_2 = int(attendee_interests[j][0])
-                        overlapping_hours = [int(overlapping_hour_row[0]) for overlapping_hour_row in c.execute('SELECT t1.hid FROM talk_available t1, talk_available t2 WHERE t1.hid=t2.hid and t1.tid=? and t2.tid=?', (tid_1, tid_2)).fetchall()]
-                        for hid in overlapping_hours:
+                        for hid in set(talk_really_available[tid_1].keys()).intersection(talk_really_available[tid_2].keys().set()):
                             # these two talks can be scheduled at the same time and this attendee has indicated interest; there will be a penalty if these two are scheduled at the same time
                             if total_conflict_vars > 0:
                                 f.write(' + ')
@@ -411,6 +410,9 @@ def generate_model(db_path, type):
                     f.write('C%d: %s <= 1\n' % (constraint_count, constraint))
                     constraint_count += 1
 
+
+        # give c matrix the correct values
+        for tid in talks:
 
 
         # TODO: Bounds for the c matrix

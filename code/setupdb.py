@@ -14,8 +14,9 @@
 '''
 
 import sqlite3
+import random
 
-def setup_db(db_path, num_talks, num_attendees, attendees_with_rsvps, num_rsvps):
+def setup_db(db_path, num_talks, num_attendees, num_rsvps):
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute('DELETE FROM talks WHERE tid >= ?', (num_talks,))
@@ -24,6 +25,18 @@ def setup_db(db_path, num_talks, num_attendees, attendees_with_rsvps, num_rsvps)
     c.execute('DELETE FROM room_suitable_for WHERE tid >= ?', (num_talks,))
     c.execute('DELETE FROM schedule')
     if num_attendees != None:
-        pass
+        c.execute('DELETE FROM attendee')
+        c.execute('DELETE FROM attendee_interest')
+        conn.commit()
+        max_tid = c.execute('SELECT MAX(tid) FROM talks').fetchone()[0]
+        tid_range = range(0, max_tid + 1)
+        aid = 0
+        while aid < num_attendees:
+            c.execute('INSERT INTO attendee VALUES (?)', (aid,))
+            for i in range(0, num_rsvps):
+                tid = random.choice(tid_range)
+                c.execute('INSERT INTO attendee_interest VALUES (?, ?)', (aid, tid))
+            aid += 1
+
     conn.commit()
     conn.close()
