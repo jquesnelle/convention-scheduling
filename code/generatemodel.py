@@ -31,6 +31,9 @@ def generate_model(db_path, type):
     presenter_available = {}
     talk_available = {}
     room_available = {}
+    times_talk_given = {}
+    has_conflict = set()
+    conflict_pairs = set()
 
     for gives_talk_row in c.execute('SELECT pid, tid FROM gives_talk'):
         pid = gives_talk_row[0]
@@ -45,10 +48,13 @@ def generate_model(db_path, type):
         else:
             talk_given_by[tid].append(pid)
 
+    for tid in talks:
+        times_talk_given[tid] = gives_talk[next(iter(talk_given_by[tid]))][tid] # the schedule is infeasible by requirement (c) if this doesn't match for all presenters, so just pick the first
 
-    conflict_vars = set()
     f_vars = {}
     g_vars = {}
+    z_vars = {}
+    c_vars = {}
     constraint_count = 0
 
     if not 'naive' in type:
@@ -106,7 +112,7 @@ def generate_model(db_path, type):
             room_available[rid].add(hid)
 
     with open(db_path + '.lp', 'w') as f:
-        f.write('Minimize\nOBJ: ')
+        f.write('Minimize\nobj: ')
 
         if 'ecttd' in type:
             if not 'naive' in type:
@@ -134,8 +140,8 @@ def generate_model(db_path, type):
                                     f.write(' + ')
                                 f.write('f_p%d_t%d_h%d_r%d' % (pid,tid,hid,rid))
         elif 'pco' in type:
-            # Minimize "c" which will be matrix of hour x talk x talk -> rsvp conflicts
-            total_conflict_vars = 0
+            # Minimize "c" which will be matrix of  talk x talk x hour -> rsvp conflicts
+            first = True
             for aid in attendees:
                 attendee_interests = c.execute('SELECT tid FROM attendee_interest WHERE aid=?', (aid,)).fetchall()
                 if len(attendee_interests) < 2:
@@ -144,13 +150,28 @@ def generate_model(db_path, type):
                     tid_1 = int(attendee_interests[i][0])
                     for j in range(i + 1, len(attendee_interests)): # the c matrix is symmetric for a given attendee, i.e c_eij = c_eji
                         tid_2 = int(attendee_interests[j][0])
-                        for hid in set(talk_really_available[tid_1].keys()).intersection(talk_really_available[tid_2].keys().set()):
+                        for hid in set(talk_really_available[tid_1].keys()).intersection(set(talk_really_available[tid_2].keys())):
                             # these two talks can be scheduled at the same time and this attendee has indicated interest; there will be a penalty if these two are scheduled at the same time
-                            if total_conflict_vars > 0:
-                                f.write(' + ')
-                            conflict_var = 'c_h%d_t%d_t%d' % (hid, tid_1, tid_2)
-                            conflict_vars.add(conflict_var)
-                            f.write(conflict_var)
+                            if tid_2 in c_vars.keys():
+                                if tid_1 in c_vars[tid_2].keys():
+                                    break
+                            if not tid_1 in c_vars:
+                                c_vars[tid_1] = {}
+                            if not tid_2 in c_vars[tid_1]:
+                                c_vars[tid_1][tid_2] = {}
+                            if not hid in c_vars[tid_1][tid_2]:
+                                c_vars[tid_1][tid_2][hid] = 0
+                            c_vars[tid_1][tid_2][hid] += 1
+                            if c_vars[tid_1][tid_2][hid] == 1:
+                                if first == True:
+                                    first = False
+                                else:
+                                    f.write(' + ')
+                                f.write('c_t%d_t%d_h%d' % (tid_1, tid_2, hid))
+                                has_conflict.add(tid_1)
+                                has_conflict.add(tid_2)
+                                conflict_pairs.add((tid_1, tid_2))
+                                conflict_pairs.add((tid_2, tid_1))
 
         f.write('\nSubject To\n')
 
@@ -363,6 +384,16 @@ def generate_model(db_path, type):
                         f.write('\\* Sum the presenter entries for talk %d at hour %d in room %d; creates g *\\\n' % (tid, hid, rid))
                         f.write('C%d: %s\n' % (constraint_count, constraint))
                         constraint_count += 1
+                        '''
+                        for pid in talk_given_by[tid]:
+                            if not tid in g_vars:
+                                g_vars[tid] = {}
+                            if not hid in g_vars[tid]:
+                                g_vars[tid][hid] = set()
+                            g_vars[tid][hid].add(rid)
+                            f.write('C%d: f_p%d_t%d_h%d_r%d - g_t%d_h%d_r%d <= 0\n' % (constraint_count, pid,tid,hid,rid, tid,hid,rid)) # gives the correct answer with = 0, but this is WRONG?!?!?!?!?
+                            constraint_count += 1
+                        '''
             for hid in real_availability_of_talks.keys():
                 for rid in real_availability_of_talks[hid].keys():
                     first = True
@@ -411,11 +442,58 @@ def generate_model(db_path, type):
                     constraint_count += 1
 
 
-        # give c matrix the correct values
-        for tid in talks:
+        # deal with rsvp conflicts
+        if 'pco' in type:
+            # use the boolean cast trick again to collapse G to Z : talk x hour
+            for tid in has_conflict:
+                for hid in talk_really_available[tid].keys():
+                    first = True
+                    constraint = ''
+                    for rid in talk_really_available[tid][hid]:
+                        if not tid in z_vars:
+                            z_vars[tid] = set()
+                        z_vars[tid].add(hid)
+                        if first == True:
+                            first = False
+                        else:
+                            constraint += ' + '
+                        constraint += 'g_t%d_h%d_r%d' % (tid,hid,rid)
+                    constraint += ' - %d z_t%d_h%d <= 0' % (upper_bound,tid,hid)
+                    f.write('\\* Sum the room entries for talk %d at hour %d; creates z *\\\n' % (tid, hid))
+                    f.write('C%d: %s\n' % (constraint_count, constraint))
+                    constraint_count += 1
+            for tid in has_conflict:
+                first = True
+                constraint = ''
+                for hid in talk_really_available[tid].keys():
+                    if first == True:
+                        first = False
+                    else:
+                        constraint += ' + '
+                    constraint += 'z_t%d_h%d' % (tid,hid)
+                constraint += ' = %d' % (times_talk_given[tid])
+                f.write('\\* Talk %d must be given exactly %d times *\\\n' % (tid, times_talk_given[tid]))
+                f.write('C%d: %s\n' % (constraint_count, constraint))
+                constraint_count += 1
+            # use boolean cast trick to calculate z' : talk x talk x hour
+            for tid_1 in c_vars.keys():
+                for tid_2 in c_vars[tid_1].keys():
+                    for hid in c_vars[tid_1][tid_2]:
+                        f.write('C%d: z_t%d_h%d + z_t%d_h%d - 2 zp_t%d_t%d_h%d <= 1\n' % (constraint_count, tid_1,hid, tid_2,hid, tid_1,tid_2,hid))
+                        constraint_count += 1
 
+            # give c matrix the correct values
+            for tid_1 in c_vars.keys():
+                for tid_2 in c_vars[tid_1].keys():
+                    for hid in c_vars[tid_1][tid_2]:
+                        f.write('C%d: c_t%d_t%d_h%d - %d zp_t%d_t%d_h%d = 0\n' % (constraint_count, tid_1,tid_2,hid, c_vars[tid_1][tid_2][hid], tid_1,tid_2,hid))
+                        constraint_count += 1
 
-        # TODO: Bounds for the c matrix
+        f.write('Generals\n')
+        for tid_1 in c_vars.keys():
+            for tid_2 in c_vars[tid_1].keys():
+                for hid in c_vars[tid_1][tid_2]:
+                    f.write('c_t%d_t%d_h%d\n' % (tid_1, tid_2, hid))
 
         # The f and g values are binaries
         f.write('Binaries\n')
@@ -429,6 +507,13 @@ def generate_model(db_path, type):
                 for hid in g_vars[tid].keys():
                     for rid in g_vars[tid][hid]:
                         f.write('g_t%d_h%d_r%d\n' % (tid,hid,rid))
+            for tid in z_vars.keys():
+                for hid in z_vars[tid]:
+                    f.write('z_t%d_h%d\n' % (tid, hid))
+            for tid_1 in c_vars.keys():
+                for tid_2 in c_vars[tid_1].keys():
+                    for hid in c_vars[tid_1][tid_2]:
+                        f.write('zp_t%d_t%d_h%d\n' % (tid_1, tid_2, hid))
         else:
             for pid in presenters:
                     for tid in talks:
