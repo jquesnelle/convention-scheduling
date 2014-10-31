@@ -21,7 +21,39 @@ def generate_report(db_path):
     with open(db_path + '.html', 'w') as html:
         html.write('<!DOCTYPE html><head><meta charset=\"UTF-8\"></head><body>\n')
 
+        schedule = c.execute("SELECT t.tid, t.name, h.hid, h.time, r.rid, r.name FROM "
+                             "talks t, schedule s, rooms r, hours h "
+                             "WHERE t.tid == s.tid and r.rid=s.rid and s.hid=h.hid GROUP BY s.tid, s.hid, s.rid ORDER BY h.hid ASC").fetchall()
+
+        z = {}
+        for scheduled in schedule:
+            tid = int(scheduled[0])
+            hid = int(scheduled[2])
+            if not tid in z:
+                z[tid] = set()
+            z[tid].add(hid)
+
         #TODO: Calculate attendee conflicts
+        attendees = [int(attendee_row[0]) for attendee_row in c.execute('SELECT aid FROM attendee').fetchall()]
+        conflicts = 0
+        total_rsvps = 0
+        for aid in attendees:
+            attendee_interests = c.execute('SELECT tid FROM attendee_interest WHERE aid=?', (aid,)).fetchall()
+            if len(attendee_interests) < 2:
+                continue # no possible conflicts for this attendee
+            total_rsvps += len(attendee_interests)
+            for i in range(0, len(attendee_interests)):
+                tid_1 = int(attendee_interests[i][0])
+                for j in range(i + 1, len(attendee_interests)): # the c matrix is symmetric for a given attendee, i.e c_eij = c_eji
+                    tid_2 = int(attendee_interests[j][0])
+                    intersection = z[tid_1].intersection(z[tid_2])
+                    conflict = len(intersection)
+                    conflicts += conflict
+                    if conflict > 0:
+                        html.write('Attendee %d wants to go to talks %d and %d but they are both at hour %d!<br/>\n' % (aid, tid_1, tid_2, next(iter(intersection))))
+        html.write('Total attendee RSVPS: %d<br/>\n' % (total_rsvps))
+        html.write('Attendee RSVP conflicts: %d<br/>\n' % (conflicts, ))
+
 
         #Presenter conflicts
         presenter_conflicts = c.execute("SELECT s1.tid, s1.talk_name, s2.tid, s2.talk_name FROM "
@@ -42,10 +74,6 @@ def generate_report(db_path):
                            str(presenter_conflict[4]), str(presenter_conflict[5]), str(presenter_conflict[6]), str(presenter_conflict[7])))
             html.write('</td><br/>')
 
-
-        schedule = c.execute("SELECT t.tid, t.name, h.hid, h.time, r.rid, r.name FROM "
-                             "talks t, schedule s, rooms r, hours h "
-                             "WHERE t.tid == s.tid and r.rid=s.rid and s.hid=h.hid GROUP BY s.tid, s.hid, s.rid ORDER BY h.hid ASC").fetchall()
         current_hid = -1
         for scheduled in schedule:
             if int(scheduled[2]) != current_hid:
