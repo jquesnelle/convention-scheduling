@@ -507,13 +507,19 @@ def generate_model(db_path, type):
                 for hid in g_vars[tid].keys():
                     for rid in g_vars[tid][hid]:
                         f.write('g_t%d_h%d_r%d\n' % (tid,hid,rid))
+            size_of_z = 0
             for tid in z_vars.keys():
+                size_of_z += len(z_vars[tid])
                 for hid in z_vars[tid]:
                     f.write('z_t%d_h%d\n' % (tid, hid))
+            size_of_c = 0
             for tid_1 in c_vars.keys():
                 for tid_2 in c_vars[tid_1].keys():
+                    size_of_c += len(c_vars[tid_1][tid_2])
                     for hid in c_vars[tid_1][tid_2]:
                         f.write('zp_t%d_t%d_h%d\n' % (tid_1, tid_2, hid))
+            print '|z| = %d' % (size_of_z,)
+            print '|c| = %d' % (size_of_c,)
         else:
             for pid in presenters:
                     for tid in talks:

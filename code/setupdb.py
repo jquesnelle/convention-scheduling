@@ -15,6 +15,7 @@
 
 import sqlite3
 import random
+import numpy
 
 def setup_db(db_path, num_talks, num_attendees, num_rsvps):
     conn = sqlite3.connect(db_path)
@@ -33,8 +34,16 @@ def setup_db(db_path, num_talks, num_attendees, num_rsvps):
         aid = 0
         while aid < num_attendees:
             c.execute('INSERT INTO attendee VALUES (?)', (aid,))
-            for i in range(0, num_rsvps):
-                tid = random.choice(tid_range)
+            rsvps = set()
+            i = 0
+            while i < num_rsvps:
+                # tid = random.choice(tid_range)
+                tid = int(10 * numpy.random.randn()) + int((max_tid/2))
+                if tid in rsvps:
+                    continue
+                else:
+                    rsvps.add(tid)
+                    i += 1
                 c.execute('INSERT INTO attendee_interest VALUES (?, ?)', (aid, tid))
             aid += 1
 
