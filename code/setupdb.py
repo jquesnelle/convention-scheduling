@@ -51,7 +51,7 @@ def setup_db(db_path, num_talks, num_attendees, num_rsvps, distribution):
                 while i < num_rsvps:
                     if distribution == 'uniform':
                         tid = random.choice(tid_range)
-                    elif distribution == 'normal':
+                    else:
                         tid = int(10 * numpy.random.randn()) + int((max_tid/2))
                     if tid in rsvps:
                         continue
