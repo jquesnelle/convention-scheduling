@@ -519,7 +519,6 @@ def generate_model(db_path, type):
                     size_of_c += len(c_vars[tid_1][tid_2])
                     for hid in c_vars[tid_1][tid_2]:
                         f.write('zp_t%d_t%d_h%d\n' % (tid_1, tid_2, hid))
-            print '|z| = %d' % (size_of_z,)
             print '|c| = %d' % (size_of_c,)
         else:
             for pid in presenters:

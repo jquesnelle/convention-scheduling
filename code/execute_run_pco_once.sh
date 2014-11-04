@@ -6,7 +6,7 @@ python main.py --setup-db-2013 schedule2013.html.db $1 $2 $3 $4
 echo "Generating model"
 python main.py --generate-model-pco schedule2013.html.db
 echo "Solving model"
-cbc schedule2013.html.db.lp -threads 4 -solve -solu output.sol
+cbc schedule2013.html.db.lp -threads 6 -solve -solu output.sol 
 echo "Importing solution"
 python main.py --import-solution schedule2013.html.db output.sol
 echo "Generating report"
