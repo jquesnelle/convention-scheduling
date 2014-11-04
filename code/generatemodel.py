@@ -143,7 +143,7 @@ def generate_model(db_path, type):
             # Minimize "c" which will be matrix of  talk x talk x hour -> rsvp conflicts
             first = True
             for aid in attendees:
-                attendee_interests = c.execute('SELECT tid FROM attendee_interest WHERE aid=?', (aid,)).fetchall()
+                attendee_interests = c.execute('SELECT tid FROM attendee_interest WHERE aid=? ORDER BY tid ASC', (aid,)).fetchall()
                 if len(attendee_interests) < 2:
                     continue # no possible conflicts for this attendee
                 for i in range(0, len(attendee_interests)):

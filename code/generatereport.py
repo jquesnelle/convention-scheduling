@@ -39,9 +39,9 @@ def generate_report(db_path):
         total_rsvps = 0
         for aid in attendees:
             attendee_interests = c.execute('SELECT tid FROM attendee_interest WHERE aid=?', (aid,)).fetchall()
+            total_rsvps += len(attendee_interests)
             if len(attendee_interests) < 2:
                 continue # no possible conflicts for this attendee
-            total_rsvps += len(attendee_interests)
             for i in range(0, len(attendee_interests)):
                 tid_1 = int(attendee_interests[i][0])
                 for j in range(i + 1, len(attendee_interests)): # the c matrix is symmetric for a given attendee, i.e c_eij = c_eji

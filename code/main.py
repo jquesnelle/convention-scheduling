@@ -36,8 +36,8 @@ def main():
         from setupdb import setup_db
         if len(sys.argv) == 4:
             setup_db(sys.argv[i+1], int(sys.argv[i+2]), None, None)
-        elif len(sys.argv) == 6:
-            setup_db(sys.argv[i+1], int(sys.argv[i+2]), int(sys.argv[i+3]), int(sys.argv[i+4]), sys.argv[i].split('-')[-1])
+        elif len(sys.argv) == 7:
+            setup_db(sys.argv[i+1], int(sys.argv[i+2]), int(sys.argv[i+3]), int(sys.argv[i+4]), int(sys.argv[i+5]), sys.argv[i].split('-')[-1])
 
 if __name__ == '__main__':
     main()

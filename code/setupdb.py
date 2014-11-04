@@ -18,13 +18,17 @@ import random
 import numpy
 import csv
 
-def setup_db(db_path, num_talks, num_attendees, num_rsvps, distribution):
+def setup_db(db_path, num_talks, num_hours, num_attendees, num_rsvps, distribution):
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute('DELETE FROM talks WHERE tid >= ?', (num_talks,))
     c.execute('DELETE FROM gives_talk WHERE tid >= ?', (num_talks,))
     c.execute('DELETE FROM talk_available WHERE tid >= ?', (num_talks,))
     c.execute('DELETE FROM room_suitable_for WHERE tid >= ?', (num_talks,))
+    c.execute('DELETE FROM hours WHERE hid >= ?', (num_hours,))
+    c.execute('DELETE FROM presenter_available WHERE hid >= ?', (num_hours,))
+    c.execute('DELETE FROM room_available WHERE hid >= ?', (num_hours,))
+    c.execute('DELETE FROM talk_available WHERE hid >= ?', (num_hours,))
     c.execute('DELETE FROM schedule')
     if num_attendees != None:
         c.execute('DELETE FROM attendee')
@@ -51,9 +55,13 @@ def setup_db(db_path, num_talks, num_attendees, num_rsvps, distribution):
                         #print 'Unable to find tid for %s' % talk_name
                         continue
                     tid = int(row_tids[0][0])
+                    if tid > max_tid:
+                        continue
                     if not tid in tids_already_processed:
                         tids_already_processed[tid] = 0
                     real_attendance = int(row[3])
+                    if real_attendance >= num_attendees:
+                        real_attendance = num_attendees
                     for i in range(tids_already_processed[tid], real_attendance):
                         aid = random.choice(aid_range)
                         while tid in attendee_rsvps[aid]:
@@ -71,7 +79,11 @@ def setup_db(db_path, num_talks, num_attendees, num_rsvps, distribution):
                     if distribution == 'uniform':
                         tid = random.choice(tid_range)
                     else:
-                        tid = int(10 * numpy.random.randn()) + int((max_tid/2))
+                        tid = int(.1 * max_tid * numpy.random.randn()) + int((max_tid/2))
+                        if tid < 0:
+                            tid = 0
+                        if tid >= max_tid:
+                            tid = max_tid
                     if tid in rsvps:
                         continue
                     else:
