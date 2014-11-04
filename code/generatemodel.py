@@ -355,7 +355,7 @@ def generate_model(db_path, type):
 
         # constraint (e)
         # We use a bool cast/implication trick to make g : talk x hour x room -> 0,1 == 1 <=> the jth talk is being given at hour h in room r
-        upper_bound = 2 * len(presenters) * len(rooms) * len(talks)
+        upper_bound = 2 * len(presenters)
         if not 'naive' in type:
             for tid in talks:
                 for hid in talk_really_available[tid].keys():
@@ -443,6 +443,7 @@ def generate_model(db_path, type):
 
 
         # deal with rsvp conflicts
+        upper_bound = 2 *len(rooms)
         if 'pco' in type:
             # use the boolean cast trick again to collapse G to Z : talk x hour
             for tid in has_conflict:

@@ -37,11 +37,30 @@ def setup_db(db_path, num_talks, num_attendees, num_rsvps, distribution):
         if distribution == '2013':
             with open('2013_real_attendance.csv') as csvfile:
                 reader = csv.reader(csvfile)
+                attendee_rsvps = {}
+                tids_already_processed = {}
+                while aid < num_attendees:
+                    c.execute('INSERT INTO attendee VALUES (?)', (aid,))
+                    attendee_rsvps[aid] = set()
+                    aid += 1
+                aid_range = range(0, num_attendees)
                 for row in reader:
-                    row_tids = c.execute('SELECT tid FROM talks WHERE name = ?', (row[0],)).fetchall()
+                    talk_name = row[0]
+                    row_tids = c.execute('SELECT tid FROM talks WHERE name = ?', (talk_name,)).fetchall()
                     if len(row_tids) == 0:
-                        print 'Unable to find tid for %s' % row[0]
-                    row_tid = int(row_tids[0][0])
+                        #print 'Unable to find tid for %s' % talk_name
+                        continue
+                    tid = int(row_tids[0][0])
+                    if not tid in tids_already_processed:
+                        tids_already_processed[tid] = 0
+                    real_attendance = int(row[3])
+                    for i in range(tids_already_processed[tid], real_attendance):
+                        aid = random.choice(aid_range)
+                        while tid in attendee_rsvps[aid]:
+                            aid = random.choice(aid_range)
+                        attendee_rsvps[aid].add(tid)
+                        c.execute('INSERT INTO attendee_interest VALUES (?, ?)', (aid, tid))
+                    tids_already_processed[tid] = real_attendance
 
         else:
             while aid < num_attendees:
