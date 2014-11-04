@@ -32,12 +32,12 @@ def main():
     elif sys.argv[i] == '--import-solution':
         from importsolution import import_solution
         import_solution(sys.argv[i+1], sys.argv[i+2])
-    elif sys.argv[i] == '--setup-db':
+    elif sys.argv[i].startswith('--setup-db'):
         from setupdb import setup_db
         if len(sys.argv) == 4:
             setup_db(sys.argv[i+1], int(sys.argv[i+2]), None, None)
         elif len(sys.argv) == 6:
-            setup_db(sys.argv[i+1], int(sys.argv[i+2]), int(sys.argv[i+3]), int(sys.argv[i+4]))
+            setup_db(sys.argv[i+1], int(sys.argv[i+2]), int(sys.argv[i+3]), int(sys.argv[i+4]), sys.argv[i].split('-')[-1])
 
 if __name__ == '__main__':
     main()
