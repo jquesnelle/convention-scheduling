@@ -63,9 +63,20 @@ def setup_db(db_path, num_talks, num_hours, num_attendees, num_rsvps, distributi
                     if real_attendance >= num_attendees:
                         real_attendance = num_attendees
                     for i in range(tids_already_processed[tid], real_attendance):
-                        aid = random.choice(aid_range)
+                        max_aid = len(aid_range) - 1
+                        # aid = random.choice(aid_range)
+                        aid = int(.1 * max_aid * numpy.random.randn()) + int(max_aid / 2)
+                        if aid < 0:
+                            aid = 0
+                        elif aid > max_aid:
+                            aid = max_aid
                         while tid in attendee_rsvps[aid]:
-                            aid = random.choice(aid_range)
+                            # aid = random.choice(aid_range)
+                            aid = int(.1 * max_aid * numpy.random.randn()) + int(max_aid / 2)
+                            if aid < 0:
+                                aid = 0
+                            elif aid > max_aid:
+                                aid = max_aid
                         attendee_rsvps[aid].add(tid)
                         c.execute('INSERT INTO attendee_interest VALUES (?, ?)', (aid, tid))
                     tids_already_processed[tid] = real_attendance
