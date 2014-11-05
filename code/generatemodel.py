@@ -463,6 +463,7 @@ def generate_model(db_path, type):
                     f.write('\\* Sum the room entries for talk %d at hour %d; creates z *\\\n' % (tid, hid))
                     f.write('C%d: %s\n' % (constraint_count, constraint))
                     constraint_count += 1
+            f.write('\\* START ZSUM *\\\n')
             for tid in has_conflict:
                 first = True
                 constraint = ''
@@ -477,18 +478,21 @@ def generate_model(db_path, type):
                 f.write('C%d: %s\n' % (constraint_count, constraint))
                 constraint_count += 1
             # use boolean cast trick to calculate z' : talk x talk x hour
+            f.write('\\* END ZSUM *\\\n')
             for tid_1 in c_vars.keys():
                 for tid_2 in c_vars[tid_1].keys():
                     for hid in c_vars[tid_1][tid_2]:
                         f.write('C%d: z_t%d_h%d + z_t%d_h%d - 2 zp_t%d_t%d_h%d <= 1\n' % (constraint_count, tid_1,hid, tid_2,hid, tid_1,tid_2,hid))
                         constraint_count += 1
 
+            f.write('\\* START CSET *\\\n')
             # give c matrix the correct values
             for tid_1 in c_vars.keys():
                 for tid_2 in c_vars[tid_1].keys():
                     for hid in c_vars[tid_1][tid_2]:
                         f.write('C%d: c_t%d_t%d_h%d - %d zp_t%d_t%d_h%d = 0\n' % (constraint_count, tid_1,tid_2,hid, c_vars[tid_1][tid_2][hid], tid_1,tid_2,hid))
                         constraint_count += 1
+            f.write('\\* END CSET *\\\n')
 
         f.write('Generals\n')
         for tid_1 in c_vars.keys():
