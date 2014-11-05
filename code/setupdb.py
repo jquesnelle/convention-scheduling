@@ -70,7 +70,7 @@ def setup_db(db_path, num_talks, num_hours, num_attendees, num_rsvps, distributi
                             aid = 0
                         elif aid > max_aid:
                             aid = max_aid
-                        while tid in attendee_rsvps[aid]:
+                        while (tid in attendee_rsvps[aid]) or (len(attendee_rsvps[aid]) >= max_tid):
                             # aid = random.choice(aid_range)
                             aid = int(.1 * max_aid * numpy.random.randn()) + int(max_aid / 2)
                             if aid < 0:
