@@ -37,8 +37,10 @@ def setup_db(db_path, num_talks, num_hours, num_attendees, num_rsvps, distributi
         max_tid = c.execute('SELECT MAX(tid) FROM talks').fetchone()[0]
         tid_range = range(0, max_tid + 1)
         aid = 0
+        sigma_ratio = 0.16
 
-        if distribution == '2013':
+        if distribution.startswith('2013'):
+            tdist = 0 if 'normal' in distribution else 1
             with open('2013_real_attendance.csv') as csvfile:
                 reader = csv.reader(csvfile)
                 attendee_rsvps = {}
@@ -64,20 +66,20 @@ def setup_db(db_path, num_talks, num_hours, num_attendees, num_rsvps, distributi
                         real_attendance = num_attendees
                     for i in range(tids_already_processed[tid], real_attendance):
                         max_aid = len(aid_range) - 1
-                        # aid = random.choice(aid_range)
-                        aid = int(.1 * max_aid * numpy.random.randn()) + int(max_aid / 2)
-                        if aid < 0:
-                            aid = 0
-                        elif aid > max_aid:
-                            aid = max_aid
-                        while (tid in attendee_rsvps[aid]) or (len(attendee_rsvps[aid]) >= max_tid):
-                            # aid = random.choice(aid_range)
-                            aid = int(.1 * max_aid * numpy.random.randn()) + int(max_aid / 2)
-                            if aid < 0:
-                                aid = 0
-                            elif aid > max_aid:
-                                aid = max_aid
-                        attendee_rsvps[aid].add(tid)
+                        if tdist == 1:
+                            aid = random.choice(aid_range)
+                        else:
+                            aid = int(sigma_ratio * max_aid * numpy.random.randn()) + int(max_aid / 2)
+                            while aid < 0 or aid > max_aid:
+                                aid = int(sigma_ratio * max_aid * numpy.random.randn()) + int(max_aid / 2)
+                        while (tid in attendee_rsvps[aid]) or (len(attendee_rsvps[aid]) >= num_hours):
+                            if tdist == 1:
+                                aid = random.choice(aid_range)
+                            else:
+                                aid = int(sigma_ratio * max_aid * numpy.random.randn()) + int(max_aid / 2)
+                                while aid < 0 or aid > max_aid:
+                                    aid = int(sigma_ratio * max_aid * numpy.random.randn()) + int(max_aid / 2)
+                            attendee_rsvps[aid].add(tid)
                         c.execute('INSERT INTO attendee_interest VALUES (?, ?)', (aid, tid))
                     tids_already_processed[tid] = real_attendance
 
@@ -90,11 +92,9 @@ def setup_db(db_path, num_talks, num_hours, num_attendees, num_rsvps, distributi
                     if distribution == 'uniform':
                         tid = random.choice(tid_range)
                     else:
-                        tid = int(.1 * max_tid * numpy.random.randn()) + int((max_tid/2))
-                        if tid < 0:
-                            tid = 0
-                        if tid >= max_tid:
-                            tid = max_tid
+                        tid = int(sigma_ratio * max_tid * numpy.random.randn()) + int((max_tid/2))
+                        while tid < 0 or tid > max_tid:
+                            tid = int(sigma_ratio * max_tid * numpy.random.randn()) + int((max_tid/2))
                     if tid in rsvps:
                         continue
                     else:
