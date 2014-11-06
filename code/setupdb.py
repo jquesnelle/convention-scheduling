@@ -37,7 +37,7 @@ def setup_db(db_path, num_talks, num_hours, num_attendees, num_rsvps, distributi
         max_tid = c.execute('SELECT MAX(tid) FROM talks').fetchone()[0]
         tid_range = range(0, max_tid + 1)
         aid = 0
-        sigma_ratio = 0.16
+        sigma_ratio = 0.25
 
         if distribution.startswith('2013'):
             tdist = 0 if 'normal' in distribution else 1
@@ -79,7 +79,7 @@ def setup_db(db_path, num_talks, num_hours, num_attendees, num_rsvps, distributi
                                 aid = int(sigma_ratio * max_aid * numpy.random.randn()) + int(max_aid / 2)
                                 while aid < 0 or aid > max_aid:
                                     aid = int(sigma_ratio * max_aid * numpy.random.randn()) + int(max_aid / 2)
-                            attendee_rsvps[aid].add(tid)
+                        attendee_rsvps[aid].add(tid)
                         c.execute('INSERT INTO attendee_interest VALUES (?, ?)', (aid, tid))
                     tids_already_processed[tid] = real_attendance
 
