@@ -19,7 +19,7 @@
 \numberwithin{equation}{section}
 
 %opening
-\title{Integer programming models of certain NP-Complete convention scheduling problems}
+\title{On the complexity of scheduling conventions}
 \author{Jeffrey Quesnelle, Daniel Steffy}
 
 \begin{document}
@@ -265,7 +265,7 @@ We have examined several different variations of scheduling problems as they rel
 	\begin{enumerate}[1.]
 		\setcounter{enumi}{7}
 		\item a finite set $E = \{e_1, e_2, \cdots, e_t\}$ of attendees;
-		\item a $t \times m$ 0-1 matrix ($W_{ej}$ indicates if the $e$th attendee would like to attend the $j$th talk).
+		\item a $t \times m$ 0-1 matrix $W$ ($W_{ej}$ indicates if the $e$th attendee would like to attend the $j$th talk).
 	\end{enumerate}
 	
 	\underline{GOAL}: Find a function 
@@ -328,6 +328,29 @@ We solved this formulation with the open source IP solver CBC on PC2103 with var
 \end{figure}
 
 \subsection{PCO}
+We now turn our attention to the Preference Convention Optimization (PCO) problem. PCO adds an additional layer of complexity to ECTTO by including a matrix of preferences for attendees with the goal of minimizing the number of conflicts caused by concurrent talks. Through experimentation we have found that PCO greatly increases the difficulty of solving our convention scheduling problem. We first present our integer programming model for PCO.
+
+The PCO model we present builds on our previous ECTTO model. In addition to the $G$ variables which collapse the four dimensional $f$ function down to three dimensions ($\text{talk} \times \text{hour} \times \text{room}$), all the while considering only those variables for which a feasible schedule is even possible given the different availability constraints, we will introduce four new sets for PCO. The first is $z$ which will collapse $g$ to two dimensions ($\text{talk} \times \text{hour}$). Next, we will expand $z$ to $z'$ which will have a three dimensional range from $\text{talk} \times \text{talk} \times \text{hour}$; it will represent if two talks $j, j'$ are both given concurrently at hour $h$. The final set $c$ has the same dimensions and will represent the conflicts (calculated from $W$, the preference matrix) if $j, j'$ are both scheduled at $h$. As with previous models, the corresponding script (e.g. $\mathcal Z$ for $z$) will represent the set of variables that are possible given availability constraints. The final set $w$ summarizes $W$ as a $\text{talk} \times \text{talk} \times \text{hour}$ matrix where each entry is the number of attendees who wish to attend both talks $j,j'$ for all $h$ when $j,j'$ can be given based on talk, presenter, and room availability. Formally, $w_{j,j',h} = |\{e_k \in E \; : \; e_k \text{ has } W_{kj} = 1 \text{ and } W_{kj'} = 1 \}|$ for each $h \in \mathcal{Z}_{j} \cap \mathcal{Z}_{j'}$. We will minimize our model on the sum all elements in $c$.
+\begin{quote}
+\textbf{PCO formulation}
+\begin{flalign}
+&\text{minimize: } \sum_{j,j',h \in \mathcal C} c_{j,j',h}& \label{pco_ip_objective} \\
+&\text{subject to:}&\\
+&\sum_{h,r \in \mathcal F_{i,j}} f_{i,j,h,r} = G_{ij}& \text{for every presenter $i$ and talk $j$}\label{pco_ip_constraint_b}\\
+&f_{i,j,h,r} - f_{i',j,h,r} = 0\label{pco_ip_constraint_c_2}& \text{for every talk $j$ with co-presenters $i$, $i'$}\\
+&\sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \le 1& \text{for every presenter $i$ and hour $h$ }\label{pco_ip_constraint_d}\\
+&\left(\sum_{i \in \mathcal F_{j,h,r}} f_{i,j,h,r}\right) - U \times g_{j,h,r} \le 0& \text{for each $g_{j,h,r} \in \mathcal G$} \label{pco_ip_constraint_e_1}\\
+&\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le 1& \text{for each hour $h$ and room $r$}\label{pco_ip_constraint_e_2}\\
+&\left(\sum_{j,h \in \mathcal G_{r}} g_{j,h,r}\right) - U \times z_{j,h} \le 0& \text{for each room $r$}\\
+&\sum_{h \in \mathcal Z_{j}} z_{j,h} = G_{ij}& \text{for each talk $j$ \text{ and some presenter $i$}}\\
+&z_{j,h} + z_{j',h} - 2 \times z'_{j,j',h} = 1& \text{for each hour $h$ and $j,j' \in \mathcal Z_h$ with $j \ne j'$} \\
+&c_{j,j',h} - w_{j,j',h} \times z'_{j,j',h}& \text{for all $j,j',h \in \mathcal {Z'}$}\\
+&\text{binary: } f_{i,j,h,r}, \; g_{j,h,r}, \; z_{j,h}, \; z'_{j,j',h}&\\
+&\text{integer: } c_{j,j',h}&
+\end{flalign}
+\end{quote}
+
+
 
 \begin{thebibliography}{9}
 \bibitem{even76}
