@@ -341,16 +341,28 @@ The PCO model we present builds on our previous ECTTO model. In addition to the 
 &\sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \le 1& \text{for every presenter $i$ and hour $h$ }\label{pco_ip_constraint_d}\\
 &\left(\sum_{i \in \mathcal F_{j,h,r}} f_{i,j,h,r}\right) - U \times g_{j,h,r} \le 0& \text{for each $g_{j,h,r} \in \mathcal G$} \label{pco_ip_constraint_e_1}\\
 &\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le 1& \text{for each hour $h$ and room $r$}\label{pco_ip_constraint_e_2}\\
-&\left(\sum_{j,h \in \mathcal G_{r}} g_{j,h,r}\right) - U \times z_{j,h} \le 0& \text{for each room $r$}\\
-&\sum_{h \in \mathcal Z_{j}} z_{j,h} = G_{ij}& \text{for each talk $j$ \text{ and some presenter $i$}}\\
-&z_{j,h} + z_{j',h} - 2 \times z'_{j,j',h} = 1& \text{for each hour $h$ and $j,j' \in \mathcal Z_h$ with $j \ne j'$} \\
-&c_{j,j',h} - w_{j,j',h} \times z'_{j,j',h}& \text{for all $j,j',h \in \mathcal {Z'}$}\\
+&\left(\sum_{j,h \in \mathcal G_{r}} g_{j,h,r}\right) - U \times z_{j,h} \le 0& \text{for each room $r$}\label{pco_ip_constraint_z}\\
+&\sum_{h \in \mathcal Z_{j}} z_{j,h} = G_{ij}& \text{for each talk $j$ \text{ and some presenter $i$}}\label{pco_ip_constraint_z_2}\\
+&z_{j,h} + z_{j',h} - 2 \times z'_{j,j',h} \le 1& \text{for each hour $h$ and $j,j' \in \mathcal Z_h$ with $j \ne j'$}\label{pco_ip_constraint_z'} \\
+&c_{j,j',h} - w_{j,j',h} \times z'_{j,j',h} = 0& \text{for all $j,j',h \in \mathcal {Z'}$} \label{pco_ip_constraint_w}\\
 &\text{binary: } f_{i,j,h,r}, \; g_{j,h,r}, \; z_{j,h}, \; z'_{j,j',h}&\\
 &\text{integer: } c_{j,j',h}&
 \end{flalign}
 \end{quote}
+Constraints \ref{pco_ip_constraint_b} - \ref{pco_ip_constraint_e_2} are the as our model for ECTTO. Constraint \ref{pco_ip_constraint_z} begins to build the $z$ variables which will be 0-1 indicators of talk $j$ being given at hour $h$ via the same boolean cast mechanism described previously by collapsing the room entries for $j,h$ in $g$. To ensure that only the correct number of $z$s are set to one, constraint \ref{pco_ip_constraint_z_2} sums all hours $h$ for each talk $j$ and sets it equal to the number of times that talk $j$ was set to be given in the problem instance (the matrix $G$). It is of note that we pick \emph{any} presenter $i$'s entry in $G$ for talk $j$; although it is possible that a co-presenter $i'$ may have a different value for $G_{i'j}$ requirement (c) of PCO explicitly forbids this since it would be impossible for all co-presenters to be at all instances of a talk if they had different entries for their shared talk $j$, thus we can pick any presenter $i$.
 
+The $z$ variables will now be used to generate $z'$, which will indicate if a pair of talks $j,j'$ are being given concurrently at hour $h$. Specifically, $z'_{j,j',h} = 1 \iff z_{j,h} = 1 \text{ and } z_{j',h} = 1$. Constraint \ref{pco_ip_constraint_z'} sets the difference of the sum of the $z$ variables for a particular triple $j,j',h$ and twice the corresponding $z'$ to being less than one. Alone this constraint does little; $z'_{j,j',h} = 1$ always satisfies this. Constraint \ref{pco_ip_constraint_w} sets $c_{j,j',h}$ to be equal to $z'_{j,j',h}$ times $w_{j,j',h}$ (the number of RSVP conflicts if $j$ and $j'$ are scheduled at $h$). The objective of the model is to minimize the sum of $c$ (Constraint \ref{pco_ip_objective}). Thus, $z'_{j,j'h}$ effectively controls if $c_{j,j',h}$ is non-zero and so the solver will attempt to minimize the instances where $z'_{j,j',h} = 1$; it only ``has" to be 1 when both $z_{j,h}$ and $z_{j',h}$ are 1, otherwise $z'{j,j',h}=0$ will also satisfy Constraint \ref{pco_ip_constraint_z'}.
 
+To measure the efficiency of our model we tested it on our sample set PC2013. Attendance figures we recorded for each talk given at PC2013; a distribution of the attendance per talk is shown in Figure \ref{2013_attendance_distribution}.
+\begin{figure}[h!]
+\caption{Distribution of attendance at PC2013}
+	\centering
+		\input 2013_attendance_distribution
+	\label{2013_attendance_distribution}
+\end{figure}
+The sum of all attendance counts was 4101 \cite{pc2013_attendance} for around 1000 unique attendees. For the purposes of testing our model created a $W$ such that $\sum\limits_{i=0}^{n} W_{ij}$ was equal to the attendance count for that talk $j$, i.e. we created an ``RSVP" for each real talk attendance at PC2013. Since individual attendee attendance wasn't tracked (only totals were) we took some liberties in distributing the RSVPs across the attendees in our model. We first randomly spread the RSVPs over the attendees using a uniform distribution; that is, if talk $j$ had an attendance of 24 in PC2013 then 24 attendees were randomly chosen to attend this talk. We solved our model with commercial solver Gurobi which returned a solution with an objective value of 0 after 64 seconds\footnote{PCO models were run on a machine with 4 12-core Intel Xeon E5-2695 CPUs running at 2.4 GHz with 96 GB of RAM. The authors would like to thank the SECS department at Oakland University for graciously providing the computation time for this paper. They would also like to thank Gurobi Optimization, Inc. for providing a free academic license of their Gurobi Optimizer.} i.e. a schedule with absolutely no attendee conflicts.
+
+After finding a non-conflicting schedule for uniformly distributed random attendees that followed the attendance counts in PC2013 we turned our attention to how the solver would react when the random attendees were not distributed uniformly. Our intuition was that, like the actual attendance figures, the distribution of attendance per attendee would not be evenly spaced out; there would be some attendees who went to many talks, and some who went to only a few. We chose a normal distribution with $\mu = 500, \sigma = 100$. Even with an extremely powerful computer to run our model on and a state-of-the-art commercial solver we were unable to solve this instance after 24 hours.
 
 \begin{thebibliography}{9}
 \bibitem{even76}
@@ -363,6 +375,8 @@ The PCO model we present builds on our previous ECTTO model. In addition to the 
   Garey, M., D. Johnson, and L. Stockmeyer. 1976. Some simplified NP-Complete graph problems. Theoretical Computer Science 1: 237-267
  \bibitem{cheng}
  Cheng, E., Kleinberg, S., Kruk, S., Lindsey, W., and Steffy, D. 2004. A strictly combinational approach to a university exam scheduling problem. Congressus Numerantium 167: 121-132
+ \bibitem{pc2013_attendance}
+ Penguicon Programming Ops. \underline{http://penguicon.info/doku.php/programmingops?s[]=attendance}. Retried November 6, 2014.
 \end{thebibliography}
 
 \end{document}
