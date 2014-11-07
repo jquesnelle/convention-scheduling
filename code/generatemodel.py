@@ -150,6 +150,9 @@ def generate_model(db_path, type):
                     tid_1 = int(attendee_interests[i][0])
                     for j in range(i + 1, len(attendee_interests)): # the c matrix is symmetric for a given attendee, i.e c_eij = c_eji
                         tid_2 = int(attendee_interests[j][0])
+                        if tid_1 == tid_2:
+                            print 'Warning: attendee %d has multiple RSVPs for talk %d in the database' % (aid, tid_1)
+                            continue
                         for hid in set(talk_really_available[tid_1].keys()).intersection(set(talk_really_available[tid_2].keys())):
                             # these two talks can be scheduled at the same time and this attendee has indicated interest; there will be a penalty if these two are scheduled at the same time
                             if tid_2 in c_vars.keys():
