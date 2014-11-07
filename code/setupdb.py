@@ -18,7 +18,7 @@ import random
 import numpy
 import csv
 
-def setup_db(db_path, num_talks, num_hours, num_attendees, num_rsvps, distribution):
+def setup_db(db_path, num_talks, num_hours, num_attendees, num_rsvps, distribution, sigma_ratio):
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute('DELETE FROM talks WHERE tid >= ?', (num_talks,))
@@ -37,7 +37,6 @@ def setup_db(db_path, num_talks, num_hours, num_attendees, num_rsvps, distributi
         max_tid = c.execute('SELECT MAX(tid) FROM talks').fetchone()[0]
         tid_range = range(0, max_tid + 1)
         aid = 0
-        sigma_ratio = 0.16
 
         if distribution.startswith('2013'):
             tdist = 0 if 'normal' in distribution else 1

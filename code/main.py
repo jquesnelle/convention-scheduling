@@ -37,7 +37,10 @@ def main():
         if len(sys.argv) == 4:
             setup_db(sys.argv[i+1], int(sys.argv[i+2]), None, None)
         elif len(sys.argv) == 7:
-            setup_db(sys.argv[i+1], int(sys.argv[i+2]), int(sys.argv[i+3]), int(sys.argv[i+4]), int(sys.argv[i+5]), sys.argv[i].split('-')[-1])
+            setup_db(sys.argv[i+1], int(sys.argv[i+2]), int(sys.argv[i+3]), int(sys.argv[i+4]), int(sys.argv[i+5]), sys.argv[i].split('-')[-1], float(sys.argv[i+6]))
+    elif sys.argv[i] == '--make-rsvp-conflict-graph':
+        from rsvpconflictgraph import rsvp_conflict_graph
+        rsvp_conflict_graph(sys.argv[i+1])
 
 if __name__ == '__main__':
     main()
