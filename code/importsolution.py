@@ -29,7 +29,7 @@ def import_solution(db_path, solution_path):
 
         if lines[0].startswith('['):
             type = 1 # SCIP
-        elif lines[1].startswith('#'):
+        elif lines[0git ].startswith('#'):
             type = 2 # gurobi
         elif not 'Optimal' in lines[0] and not 'optimal' in lines[0]:
             print 'Non-optimal solution'
