@@ -36,7 +36,7 @@ def main():
         from setupdb import setup_db
         if len(sys.argv) == 4:
             setup_db(sys.argv[i+1], int(sys.argv[i+2]), None, None)
-        elif len(sys.argv) == 7:
+        elif len(sys.argv) == 8:
             setup_db(sys.argv[i+1], int(sys.argv[i+2]), int(sys.argv[i+3]), int(sys.argv[i+4]), int(sys.argv[i+5]), sys.argv[i].split('-')[-1], float(sys.argv[i+6]))
     elif sys.argv[i] == '--make-rsvp-conflict-graph':
         from rsvpconflictgraph import rsvp_conflict_graph

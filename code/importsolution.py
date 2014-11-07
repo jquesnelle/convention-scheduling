@@ -21,12 +21,20 @@ def import_solution(db_path, solution_path):
 
     with open(solution_path, 'r') as f:
         lines = f.readlines()
-        if not 'Optimal' in lines[0] and not 'optimal' in lines[0]:
-            print 'Non-optimal solution'
-            return
 
         c.execute('DELETE FROM schedule')
         conn.commit()
+
+        type = 0
+
+        if lines[0].startswith('['):
+            type = 1 # SCIP
+        elif lines[1].startswith('#'):
+            type = 2 # gurobi
+        elif not 'Optimal' in lines[0] and not 'optimal' in lines[0]:
+            print 'Non-optimal solution'
+            return
+
 
         start_line = 1
         if lines[start_line].startswith('o'):
@@ -34,12 +42,15 @@ def import_solution(db_path, solution_path):
 
         for line in lines[start_line:]:
             parts = line.split()
-            if parts[1].startswith('f'):
-                f_parts = parts[1].split('_')
+            if parts[1 if type == 0 else 0].startswith('f'):
+                f_parts = parts[1 if type == 0 else 0].split('_')
                 pid = int(f_parts[1][1:])
                 tid = int(f_parts[2][1:])
                 hid = int(f_parts[3][1:])
                 rid = int(f_parts[4][1:])
+                if type == 2:
+                    if int(parts[1]) != 1:
+                        continue
                 c.execute('INSERT INTO schedule VALUES (?, ?, ?, ?)', (pid,tid,hid,rid))
 
     conn.commit()
