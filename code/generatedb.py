@@ -90,7 +90,7 @@ def generate_db(xml_path, full):
                 for talk_pid in talk_pids:
                     c.execute('INSERT INTO gives_talk VALUES (?, ?)', (talk_pid, tid))
                 if room not in room_to_rid:
-                    c.execute('INSERT INTO rooms VALUES (?, ?)', (rid, room))
+                    c.execute('INSERT INTO rooms VALUES (?, ?, ?)', (rid, room, 1))
                     room_to_rid[room] = rid
                     rid += 1
                 if full == True:

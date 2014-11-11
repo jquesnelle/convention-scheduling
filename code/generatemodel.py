@@ -34,6 +34,7 @@ def generate_model(db_path, type):
     times_talk_given = {}
     has_conflict = set()
     conflict_pairs = set()
+    max_bookings_per_room = {}
 
     for gives_talk_row in c.execute('SELECT pid, tid FROM gives_talk'):
         pid = gives_talk_row[0]
@@ -50,6 +51,9 @@ def generate_model(db_path, type):
 
     for tid in talks:
         times_talk_given[tid] = gives_talk[next(iter(talk_given_by[tid]))][tid] # the schedule is infeasible by requirement (c) if this doesn't match for all presenters, so just pick the first
+
+    for room_row in c.execute('SELECT rid, max_bookings FROM rooms').fetchall():
+        max_bookings_per_room[int(room_row[0])] = int(room_row[1])
 
     f_vars = {}
     g_vars = {}
@@ -411,8 +415,8 @@ def generate_model(db_path, type):
                         else:
                             constraint += ' + '
                         constraint += 'g_t%d_h%d_r%d' % (tid,hid,rid)
-                    f.write('\\* Of all talks that can be scheduled at hour %d in room %d, at most 1 is *\\\n' % (hid, rid))
-                    f.write('C%d: %s <= 1\n' % (constraint_count, constraint))
+                    f.write('\\* Of all talks that can be scheduled at hour %d in room %d, at most %d is *\\\n' % (hid, rid, max_bookings_per_room[rid]))
+                    f.write('C%d: %s <= %d\n' % (constraint_count, constraint, max_bookings_per_room[rid]))
                     constraint_count += 1
         else:
             for tid in talks:
