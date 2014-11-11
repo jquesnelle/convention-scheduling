@@ -5,8 +5,8 @@ min=0. #min value
 width=(max-min)/n #interval width
 #function used to map a value to the intervals
 hist(x,width)=width*floor(x/width)+width/2.0
-set term png #output terminal and file
-set output "2013_attendance_distribution.png"
+set term latex #output terminal and file
+set output "2013_attendance_distribution.tex"
 set xrange [min:max]
 set yrange [0:]
 #to put an empty boundary around the
@@ -17,6 +17,6 @@ set boxwidth width*0.9
 set style fill solid 0.5 #fillstyle
 set tics out nomirror
 set xlabel "Attendance"
-set ylabel "Number of talks"
+set ylabel "\\rotatebox{90}{Number of talks}"
 #count and plot
 plot "2013_attendance_distribution.dat" u (hist($1,width)):(1.0) smooth freq w boxes notitle
