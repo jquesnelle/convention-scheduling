@@ -59,6 +59,7 @@ def generate_model(db_path, type):
     g_vars = {}
     z_vars = {}
     c_vars = {}
+    d_vars = {}
     constraint_count = 0
 
     if not 'naive' in type:
@@ -95,6 +96,13 @@ def generate_model(db_path, type):
             if not rid in real_availability_of_talks[hid]:
                 real_availability_of_talks[hid][rid] = set()
             real_availability_of_talks[hid][rid].add(tid)
+
+            for presenter_available_row in c.execute('SELECT pid, hid FROM presenter_available'):
+                pid = int(presenter_available_row[0])
+                hid = int(presenter_available_row[1])
+                if not pid in presenter_available:
+                    presenter_available[pid] = set()
+                presenter_available[pid].add(hid)
     else:
         for presenter_available_row in c.execute('SELECT pid, hid FROM presenter_available'):
             pid = int(presenter_available_row[0])
@@ -179,6 +187,14 @@ def generate_model(db_path, type):
                                 has_conflict.add(tid_2)
                                 conflict_pairs.add((tid_1, tid_2))
                                 conflict_pairs.add((tid_2, tid_1))
+            if 'dualize' in type:
+                for pid in presenter_available.keys():
+                    for hid in presenter_available[pid]:
+                        if not pid in d_vars:
+                            d_vars[pid] = set()
+                        d_vars[pid].add(hid)
+                        f.write(' + 100 d_p%d_h%d' % (pid, hid))
+
 
         f.write('\nSubject To\n')
 
@@ -325,23 +341,41 @@ def generate_model(db_path, type):
 
         # constraint (d)
         if not 'naive' in type:
-            for pid in f_vars.keys():
-                for hid in hours:
-                    first = True
-                    constraint = ''
-                    for tid in f_vars[pid].keys():
-                        if hid not in f_vars[pid][tid].keys():
-                            continue
-                        for rid in f_vars[pid][tid][hid]:
-                            if first == True:
-                                first = False
-                            else:
-                                constraint += ' + '
-                            constraint += 'f_p%d_t%d_h%d_r%d' % (pid, tid, hid, rid)
-                    if first == False:
-                        # f.write('\\* Presenter %d can only give at most one talk at hour %d *\\\n' % (pid, hid))
-                        f.write('C%d: %s <= 1\n' % (constraint_count, constraint))
-                        constraint_count += 1
+            if 'dualize' in type:
+                for pid in f_vars.keys():
+                    for hid in hours:
+                        first = True
+                        constraint = ''
+                        for tid in f_vars[pid].keys():
+                            if hid not in f_vars[pid][tid].keys():
+                                continue
+                            for rid in f_vars[pid][tid][hid]:
+                                if first == True:
+                                    first = False
+                                else:
+                                    constraint += ' + '
+                                constraint += 'f_p%d_t%d_h%d_r%d' % (pid, tid, hid, rid)
+                        if first == False:
+                            # f.write('\\* Presenter %d can only give at most one talk at hour %d *\\\n' % (pid, hid))
+                            f.write('d_p%d_h%d - %s = 0\n' % (pid, hid, constraint))
+            else:
+                for pid in f_vars.keys():
+                    for hid in hours:
+                        first = True
+                        constraint = ''
+                        for tid in f_vars[pid].keys():
+                            if hid not in f_vars[pid][tid].keys():
+                                continue
+                            for rid in f_vars[pid][tid][hid]:
+                                if first == True:
+                                    first = False
+                                else:
+                                    constraint += ' + '
+                                constraint += 'f_p%d_t%d_h%d_r%d' % (pid, tid, hid, rid)
+                        if first == False:
+                            # f.write('\\* Presenter %d can only give at most one talk at hour %d *\\\n' % (pid, hid))
+                            f.write('C%d: %s <= 1\n' % (constraint_count, constraint))
+                            constraint_count += 1
         else:
             for pid in presenters:
                 for hid in hours:
@@ -506,6 +540,9 @@ def generate_model(db_path, type):
             for tid_2 in c_vars[tid_1].keys():
                 for hid in c_vars[tid_1][tid_2]:
                     f.write('c_t%d_t%d_h%d\n' % (tid_1, tid_2, hid))
+        for pid in d_vars.keys():
+            for hid in d_vars[pid]:
+                f.write('d_p%d_h%d\n' % (pid, hid))
 
         # The f and g values are binaries
         f.write('Binaries\n')
