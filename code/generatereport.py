@@ -56,11 +56,11 @@ def generate_report(db_path):
 
 
         #Presenter conflicts
-        presenter_conflicts = c.execute("SELECT s1.tid, s1.talk_name, s2.tid, s2.talk_name FROM "
-                  "(SELECT t.tid, t.name as talk_name, p.pid, p.name as presenter_time, h.hid, h.time FROM "
+        presenter_conflicts = c.execute("SELECT DISTINCT s1.tid, s1.talk_name, s2.tid, s2.talk_name, s1.pid, s1.presenter_name, s1.hid, s1.time  FROM "
+                  "(SELECT t.tid, t.name as talk_name, p.pid as pid, p.name as presenter_name, h.hid as hid, h.time as time FROM "
                   "talks t, schedule s, gives_talk gt, presenters p, hours h "
                   "WHERE t.tid==s.tid and gt.tid==t.tid and gt.pid=p.pid and s.hid=h.hid) s1, "
-                  "(SELECT t.tid, t.name as talk_name, p.pid, p.name as presenter_time, h.hid, h.time FROM "
+                  "(SELECT t.tid, t.name as talk_name, p.pid, p.name as presenter_name, h.hid, h.time FROM "
                   "talks t, schedule s, gives_talk gt, presenters p, hours h "
                   "WHERE t.tid==s.tid and gt.tid==t.tid and gt.pid=p.pid and s.hid=h.hid) s2 "
                   "WHERE s1.tid != s2.tid and s1.hid==s2.hid and s1.pid==s2.pid;").fetchall()
@@ -69,7 +69,7 @@ def generate_report(db_path):
         else:
             html.write('Presenter conflicts:<br/>\n<table><tr><td>tid1</td><td>talk_name1</td><td>tid2</td><td>talk_name2</td><td>pid</td><td>presenter_name</td><td>hid</td><td>time</td></tr>\n')
             for presenter_conflict in presenter_conflicts:
-                html.write('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n' %
+                html.write('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n' %
                            (str(presenter_conflict[0]), str(presenter_conflict[1]), str(presenter_conflict[2]), str(presenter_conflict[3]),
                            str(presenter_conflict[4]), str(presenter_conflict[5]), str(presenter_conflict[6]), str(presenter_conflict[7])))
             html.write('</td><br/>')
