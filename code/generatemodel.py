@@ -357,7 +357,8 @@ def generate_model(db_path, type):
                                 constraint += 'f_p%d_t%d_h%d_r%d' % (pid, tid, hid, rid)
                         if first == False:
                             # f.write('\\* Presenter %d can only give at most one talk at hour %d *\\\n' % (pid, hid))
-                            f.write('d_p%d_h%d - %s = 0\n' % (pid, hid, constraint))
+                            f.write('C%d: d_p%d_h%d - %s = 0\n' % (constraint_count, pid, hid, constraint))
+                            constraint_count += 1
             else:
                 for pid in f_vars.keys():
                     for hid in hours:
