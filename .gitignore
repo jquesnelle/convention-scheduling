@@ -1,0 +1,16 @@
+*.aux
+*.bbl
+*.log
+*.out
+*.synctex
+*.bak
+*.blg
+*.sav
+*.pdf
+*.synctex.gz
+*.pyc
+*~
+*.sol
+*.db
+*.html
+*.lp

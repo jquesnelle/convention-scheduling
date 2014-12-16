@@ -5,4 +5,4 @@ set tics out nomirror
 set xlabel "$\\sigma$"
 set ylabel "\\rotatebox{90}{Run time (log scale)}"
 set logscale y
-plot [400:100] "2013_normal_sigma_run_time.dat" using 1:2 title 'normal rooms' with linespoints, "2013_normal_sigma_run_time.dat" using 1:3 title 'room classes' with linespoints
+plot [400:100] "2013_normal_sigma_run_time.dat" using 1:2 title 'normal rooms' with linespoints, "2013_normal_sigma_run_time.dat" using 1:3 title 'room classes' with linespoints, "2013_normal_sigma_run_time.dat" using 1:4 title 'room classes with dualized obj.' with linespoints

@@ -362,8 +362,9 @@ To measure the efficiency of our model we tested it on our sample set PC2013. At
 \end{figure}
 The sum of all attendance counts was 4101 \cite{pc2013_attendance} for around 1000 unique attendees. For the purposes of testing our model created a $W$ such that $\sum\limits_{i=0}^{n} W_{ij}$ was equal to the attendance count for that talk $j$, i.e. we created an ``RSVP" for each real talk attendance at PC2013. Since individual attendee attendance wasn't tracked (only totals were) we took some liberties in distributing the RSVPs across the attendees in our model. We first randomly spread the RSVPs over the attendees using a uniform distribution; that is, if talk $j$ had an attendance of 24 in PC2013 then 24 attendees were randomly chosen to attend this talk. We solved our model with commercial solver Gurobi which returned a solution with an objective value of 0 after 64 seconds\footnote{PCO models were run on a machine with 4 12-core Intel Xeon E5-2695 CPUs running at 2.4 GHz with 96 GB of RAM. The authors would like to thank the SECS department at Oakland University for graciously providing the computation time for this paper. They would also like to thank Gurobi Optimization, Inc. for furnishing a free academic license of their Gurobi Optimizer.} i.e. a schedule with absolutely no attendee conflicts.
 
-After finding a non-conflicting schedule for uniformly distributed random attendees that followed the attendance counts in PC2013 we turned our attention to how the solver would react when the random attendees were not distributed uniformly. Our intuition was that, like the actual attendance figures, the distribution of attendance per attendee would not be evenly spaced out; there would be some attendees who went to many talks, and some who went to only a few. We chose a normal distribution with $\mu = 500, \sigma = 100$. Even with an extremely powerful computer to run our model on and a state-of-the-art commercial solver we were unable to solve this instance after 24 hours. To help understand this phenomenon we created a half-sized problem (half as many talks and hours) and ran the model with decreasing values of $\sigma$ and found that the solving time exploded exponentially as $\sigma$ decreased; the average running time for $\sigma = 200$ was 19 seconds but increased to 17,012 seconds for $\sigma = 100$.
+After finding a non-conflicting schedule for uniformly distributed random attendees that followed the attendance counts in PC2013 we turned our attention to how the solver would react when the random attendees were not distributed uniformly. Our intuition was that, like the actual attendance figures, the distribution of attendance per attendee would not be evenly spaced out; there would be some attendees who went to many talks, and some who went to only a few. We chose a normal distribution with $\mu = 500, \sigma = 100$. Even with an extremely powerful computer to run our model on and a state-of-the-art commercial solver we were unable to solve this instance after 24 hours. To help understand this phenomenon we created a half-sized problem (half as many talks and hours) and ran the model with decreasing values of $\sigma$ and found that the solving time exploded exponentially as $\sigma$ decreased; the average running time for $\sigma = 200$ was 22 seconds but increased to 22,683 seconds for $\sigma = 100$.
 
+\subsubsection{Performance considerations}
 One of the reasons integer programming models can explode in running time is when the solver is unable to efficiently deal with symmetries in the model \cite{sherali}. An integer programming model is \emph{symmetric} if its variables can be permuted without changing the structure of the problem \cite{margot}. Our model exhibits high amounts of symmetry in relation to the scheduling of talks in rooms. If two rooms have the same availability and suitability set then permuting talk assignments among them in each hour produces no discernible change to the objective. It may be however that the solver will choose to branch early on in its branch-and-bound tree on these room assignments, leading to lots of unnecessary computation. In general it is difficult for the solver to detect that such variables ``really" represent the same thing, although there are several mechanisms for  determining and avoiding symmetry in solvers \cite{ostrowski}. However, it is easy for us to identify this symmetry and avoid it.
 
 Two rooms will be said to be \emph{symmetric} if they have the same suitability and availability sets, i.e. for rooms $R_\alpha$ and $R_\beta$ we have that $R_\alpha$ and $R_\beta$ are symmetric if and only if
@@ -372,16 +373,65 @@ A_\alpha = A_\beta \quad \text{and} \\
 \{i \; | \; R_\alpha \in S_i \text{ for all } 1 \le i \le m\} = \{i \; | \; R_\beta \in S_i \text{ for all } 1 \le i \le m\}.
 \end{gather*}
 To break the symmetry we create room \emph{classes} which will represent several rooms with the same attributes. First, we make a new room set $R' = \{ \{r_1, r_2, \cdots, r_p \} \; | \; \text{all } r \in R \text{ are symmetric with each other} \}$. The corresponding new availability set $A'$ has simply the common availability set for each new $r' \in R'$. For the new suitability set $S'$ we replace each instance of $r$ with the room class that $r$ is a member of. When we solve our model talks will be booked to room classes, avoiding the symmetry that arises by having to consider two essentially ``equal" rooms separately. When our model is solved we will have bookings in room classes, and we can arbitrarily assign the talk to any room in that class. We must make only one adjustment to our model: Constraint \ref{pco_ip_constraint_e_2} in the PCO model ensures that each room has only one talk booked in it per hour. For our room classes we wish to relax this, requiring only that the number of bookings be at most the number of rooms in the class; this way, when we assign actual rooms from the solved model we can match talks to rooms in a one-to-one way. Formally, we will change Constraint \ref{pco_ip_constraint_e_2} to
-\begin{gather*}
+\begin{gather}
 \sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le |r|.
-\end{gather*}
+\end{gather}
 It is easy to see that this model degenerates to our regular PCO model when no rooms are symmetric; in this case each room class would contain only one room. In practice the removal of the room symmetries led to around a 5x performance increase for our solver on PC2013 which contained only three room classes but had fourteen rooms (see Figure \ref{2013_normal_sigma_run_time}). 
+
+One method of potentially improving the performance of integer programming solvers is to \emph{dualize} the objective, by moving some of the constraints into the objective. We chose to dualize constraint (d), namely that no presenter is scheduled for more than one talk per hour. We first created 0-1 indicator variables $d_{i,h} = 1 \iff $ presenter $i$ is doubly (or more) booked at hour $h$ by changing \ref{pco_ip_constraint_d} (which enforced (d)) to
+\begin{gather}
+\left( \sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \right) - U \times d_{i,h} \le 1. \label{pco_ip_dualized_d}
+\end{gather}
+The left hand side of \ref{pco_ip_dualized_d} is the number of times that presenter $i$ is scheduled at hour $h$, and $d_{i,h}$ may be 0 or 1 if this sum is less than 2, but must be 1 if the sum is 2 or greater. We then changed the objective (\ref{pco_ip_objective}) to 
+\begin{gather}
+\text{minimize: } \sum_{j,j',h \in \mathcal C} c_{j,j',h} + \sum_{i,h \in \mathcal D} U \times d_{i,h}.
+\end{gather}
+Our new objective places a penalty on presenters being multiply booked but expressly forbid it, but this penalty is arbitrarily large (controlled by our magic large constant $U$) -- as such it should be ``obvious" when such a situation has occurred. In practice, dualizing PCO led to moderate performance increases (around 75\% faster, see Figure \ref{2013_normal_sigma_run_time}).
 \begin{figure}[h!]
 \caption{Run time of PCO model with decreasing $\sigma$}
 	\centering
-		\input 2013_normal_sigma_run_time
+		\input 2013_normal_sigma_run_time \\
+	\begin{tabular}{| l | r | r | r | r | r | r | r | r | r | r | r | r | r | r | r |}
+	\hline
+	& 400 & 390	 & 380  & 370 & 360 & 350 & 340 & 330 & 320 & 310 & 300 & 290 & 280 & 270 & 260 \\
+	\hline
+	Rooms & 5.4 & 5.2 & 9 & 5.8 & 4.6 & 10 & 6.2 & 6.4 & 9.4 & 7 & 6.8 & 7 & 10.6 & 13.4 & 9.6 \\
+	\hline
+	Classes & 0.8 & 0.6 & 4 & 0.8 & 1.8 & 1.2 & 1 & 0.8 & 3 & 0.6 & 3 & 0.4 & 2.2 & 0.8 & 4.6 \\
+	\hline
+	Dual & 0.4 & 0.2 & 0.4 & 0.4 & 0.4 & 0.4 & 1.4 & 1.6 & 1 & 1 & 0.8 & 1.4 & 0.8 & 0.8 & 1.8 \\
+	\hline
+	\end{tabular} \\
+	\hfill \break
+	\begin{tabular}{| l | r | r | r | r | r | r | r | r | r | r | r |}
+	\hline
+	 & 250 & 240 & 230 & 220 & 210 & 200 & 190 & 180 & 170 & 160 & 150 \\
+	\hline
+	Rooms & 12.8 & 19.2 & 22.8 & 27.4 & 24 & 22.8 & 32.8 & 38.6 & 53.4 & 181.6 & 196.2 \\
+	\hline
+	Classes & 6 & 5 & 7.6 & 7.6 & 4.8 & 10.2 & 13.8 & 11.8 & 25 & 165.4 & 156.8 \\
+	\hline
+	Dual & 2.2 & 3.4 & 1.8 & 2 & 2.8 & 4.8 & 4.8 & 6.8 & 13 & 8.4 & 45.2 \\
+	\hline	
+	\end{tabular} \\
+	\hfill \break
+	\begin{tabular}{| l | r | r | r | r | r |}
+	\hline
+	& 140 & 130 & 120 & 110 & 100 \\
+	\hline
+	Rooms & 907 & 553.6 & 4277.8 & 7793.4 & 22683.7 \\
+	\hline
+	Classes & 75.4 & 329.2 & 353.2 & 3884.6 & 4179.2 \\
+	\hline
+	Dual & 68.8 & 156.6 & 159.8 & 510.8 & 3282.6 \\
+	\hline
+	\end{tabular}
 	\label{2013_normal_sigma_run_time}
 \end{figure}
+
+\section{Conclusion}
+
+\pagebreak
 
 \begin{thebibliography}{9}
 \bibitem{even76}
