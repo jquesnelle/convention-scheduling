@@ -19,7 +19,7 @@
 \numberwithin{equation}{section}
 
 %opening
-\title{On the complexity of scheduling conventions}
+\title{On the complexity of scheduling conferences}
 \author{Jeffrey Quesnelle\\Oakland University \and Daniel Steffy\\Oakland University}
 
 \begin{document}
@@ -27,12 +27,12 @@
 \maketitle
 
 \begin{abstract}
-The problem of determining if there is a feasible schedule for a convention given the constraints of rooms, presenters, and attendees is closely related to the so-called timetable problem, some formulations of which are NP-Complete with corresponding optimization problems that are NP-Hard. The complexity classes of various formulations of a convention scheduling problem are given as well as an investigation into models that optimally solve certain types of these problems with integer programming.
+The problem of determining if there is a feasible schedule for a conference given the constraints of rooms, presenters, and attendees is closely related to the so-called timetable problem, some formulations of which are NP-Complete with corresponding optimization problems that are NP-Hard. The complexity classes of various formulations of a conference scheduling problem are given as well as an investigation into models that optimally solve certain types of these problems with integer programming.
 \end{abstract}
 
 \section{Introduction}
 
-The authors of this paper were working on developing a website for a local convention. Part of the scope for the website involved developing a scheduling portion; various talks and presenters needed to be scheduled into the limited programming space and time so as to ensure no presenter had dual-bookings. Furthermore, the website gave the ability for attendees to ``RSVP" to events before-hand, giving the extra complication of trying to generate the schedule that minimized conflicts amongst presentations attendees had previously indicated they were interested in.
+The authors of this paper were working on developing a website for a local conference. Part of the scope for the website involved developing a scheduling portion; various talks and presenters needed to be scheduled into the limited programming space and time so as to ensure no presenter had dual-bookings. Furthermore, the website gave the ability for attendees to ``RSVP" to events before-hand, giving the extra complication of trying to generate the schedule that minimized conflicts amongst presentations attendees had previously indicated they were interested in.
 
 \subsection{Background and related problems}
 The problem of assigning resources to some tasks given a set of constraints is a problem that has been studied widely in literature and appears often in day-to-day life. A new university student perusing the catalog of scheduled classes would be right to marvel at the ingenuity it takes to align different professor skills, availabilities, and course requirements into a cohesive plan. (Although often their opinion on its ingenuity may vary when inevitably two required courses are only offered concurrently!)  
@@ -43,7 +43,7 @@ Unfortunately, classical TTD often doesn't map well onto several common problems
 
 \section{Problem descriptions and classes}
 \subsection{Timetable Decision Problem}
-Although the previous discussion regarding BCS and ECS is illuminating, our specific problem of convention scheduling more closely resembles TTD. The precise formulation of TTD is as follows.
+Although the previous discussion regarding BCS and ECS is illuminating, our specific problem of conference scheduling more closely resembles TTD. The precise formulation of TTD is as follows.
 \begin{quote}
 	\textsc{Timetable Decision Problem}
 	
@@ -80,10 +80,10 @@ As mentioned previously, TTD is NP-Complete \cite{even76}. Now, consider the fol
 \end{quote}
 RTTD has been shown to be NP-Complete via a direct 3-SAT reduction \cite{even76} (in fact, TTD was shown to be NP-Complete by showing that RTTD is NP-Complete).
 
-\subsection{Convention TTD Problem}
-Although TTD solves an important portion of the problem, the requirements of a convention may be slightly different: a more common instance is that there may be multiple presenters for each talk. The restraint (c) of TTD explicitly forbid this; in particular, (c) ensures that each talk is scheduled to exactly one presenter. In the case where multiple presenters are allowed we most likely wish to add a different constraint: that for each talk \emph{every} presenter that can be scheduled is scheduled. As an illustration, if Alice is giving talks A, B, and C, and Bob is giving talks B, C, and D, all scheduled instances of B and C should include both Alice and Bob. This leaves us with the Convention Timetable Decision problem (CTTD).
+\subsection{Conference TTD Problem}
+Although TTD solves an important portion of the problem, the requirements of a conference may be slightly different: a more common instance is that there may be multiple presenters for each talk. The restraint (c) of TTD explicitly forbid this; in particular, (c) ensures that each talk is scheduled to exactly one presenter. In the case where multiple presenters are allowed we most likely wish to add a different constraint: that for each talk \emph{every} presenter that can be scheduled is scheduled. As an illustration, if Alice is giving talks A, B, and C, and Bob is giving talks B, C, and D, all scheduled instances of B and C should include both Alice and Bob. This leaves us with the Conference Timetable Decision problem (CTTD).
 \begin{quote}
-	\textsc{Convention Timetable Decision Problem}
+	\textsc{Conference Timetable Decision Problem}
 	
 	Same as TTD, but with restraint (c) changed to
 	\begin{enumerate}[(c)]
@@ -104,8 +104,8 @@ If and only if algorithm accepts this instance then there exists a function $f$ 
 In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is NP-Complete, CTTD is NP-Complete.
 \end{proof}
 
-\subsection{Basic Convention TTD Problem}
-Lovelace showed that a relaxed version of TTD (called BCS for ``Basic Course Scheduling") can be solved in polynomial time using a network flow model \cite{lovelace2010}. The principal differences between BCS and TTD are the reduction of many ``hard" requirements such as those insisting that a presenter give \emph{exactly} a certain number of talks of a certain type to simply saying they may give \emph{at most} a number of talks for which they are \emph{willing} to give. BCS does maintain a hard requirement that all presentations must be scheduled (otherwise simply not holding the convention at all would be a feasible solution!), it simply is less picky on who exactly does the presenting. We formulate BCS in terms our previously used nomenclature as the Basic Timetable Decision Problem (BTTD).
+\subsection{Basic Conference TTD Problem}
+Lovelace showed that a relaxed version of TTD (called BCS for ``Basic Course Scheduling") can be solved in polynomial time using a network flow model \cite{lovelace2010}. The principal differences between BCS and TTD are the reduction of many ``hard" requirements such as those insisting that a presenter give \emph{exactly} a certain number of talks of a certain type to simply saying they may give \emph{at most} a number of talks for which they are \emph{willing} to give. BCS does maintain a hard requirement that all presentations must be scheduled (otherwise simply not holding the conference at all would be a feasible solution!), it simply is less picky on who exactly does the presenting. We formulate BCS in terms our previously used nomenclature as the Basic Timetable Decision Problem (BTTD).
 \begin{quote}
 	\textsc{Basic Timetable Decision Problem}
 	
@@ -135,9 +135,9 @@ Lovelace showed that a relaxed version of TTD (called BCS for ``Basic Course Sch
 \begin{rem}
 BTTD $\in$ P \cite{lovelace2010}.
 \end{rem}
-The difference between TTD and CTTD is the ability for presentations to have multiple presenters, and the requirement that all presenters be scheduled for all instances of a talk. Likewise, we can formulate a modified version of BTTD that incorporates this new constraint which we will call the Basic Convention Timetable Decision problem (BCTTD). 
+The difference between TTD and CTTD is the ability for presentations to have multiple presenters, and the requirement that all presenters be scheduled for all instances of a talk. Likewise, we can formulate a modified version of BTTD that incorporates this new constraint which we will call the Basic Conference Timetable Decision problem (BCTTD). 
 \begin{quote}
-	\textsc{Basic Convention Timetable Decision Problem}
+	\textsc{Basic Conference Timetable Decision Problem}
 	
 	Same as BTTD, but with constraint (c) changed to
 	\begin{enumerate}[(c)]
@@ -222,12 +222,12 @@ Which gives rise to the coloring (colors represented as filled, solid, and dashe
 \includegraphics[scale=0.75]{3colorinstancecolored}
 \end{center}
 
-\subsection{Extended Convention TTD Problem}
+\subsection{Extended Conference TTD Problem}
 CTTD provides the ``core" of the scheduling problem we investigated; while it remains NP-Complete the problem is a significant enough deviation from canonical TTD that it required a formal proof of its NP-Completeness. We now present a modification to CTTD that consists mainly of additional constraints to certain parameters, but CTTD will be seen as a trivial special case.
 
-CTTD ensures that each presenter is correctly scheduled for their presentations without conflict, but this may not be sufficient in a real-world scenario. A more useful solution would be one that not only schedules presenters and presentations but also assigns to each presentation a room in which the presentation will take place (ensuring that each presentation has exclusive access to its room at each hour). Furthermore, symmetric with the suitability sets in TTD that restricts the availability of presentations and presenters to certain times, rooms also may only be available during certain times or suitable for certain presentations, so this must be factored into the problem. To this end we present the Extended Convention Timetable Decisions problem (ECTTD).
+CTTD ensures that each presenter is correctly scheduled for their presentations without conflict, but this may not be sufficient in a real-world scenario. A more useful solution would be one that not only schedules presenters and presentations but also assigns to each presentation a room in which the presentation will take place (ensuring that each presentation has exclusive access to its room at each hour). Furthermore, symmetric with the suitability sets in TTD that restricts the availability of presentations and presenters to certain times, rooms also may only be available during certain times or suitable for certain presentations, so this must be factored into the problem. To this end we present the Extended Conference Timetable Decisions problem (ECTTD).
 \begin{quote}
-	\textsc{Extended Convention Timetable Decision Problem}
+	\textsc{Extended Conference Timetable Decision Problem}
 	
 	\underline{INSTANCE}: Same as CTTD, but with the additional parameters:
 		\begin{enumerate}[1.]
@@ -256,10 +256,10 @@ ECTTD is NP-Complete.
 Let $L=(H,P,T,G)$ be an instance of CTTD. Let $R=T$, $A=\{H,H,\cdots,H\}$ with $|A|=R$ (i.e. each $A_k=H$), and  likewise let $S=\{H,H,\cdots,H\}$ with $|S|=|T|$. We now have an instance $L'=(H,P,T,G,R,A,S)$ of ECTTD (we note with slight amusement the embedded GRAPHS anagram). As with CTTD if an algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d).
 \end{proof}
 
-\subsection{Preference Convention Optimization Problem}
-We have examined several different variations of scheduling problems as they relate to conventions; we now offer a final variation that will be the subject of study for the rest of the paper. In particular we are interested in not only finding an acceptable schedule but also a schedule that minimizes ``conflicts" to convention attendees. To this end, we will add a new piece of data to the puzzle, namely a set of convention attendees and their preferences for talks they would like to attend. Armed with this information we can attempt to find not only a schedule that meets the requirements of rooms, presenters, etc. but also one that is most acceptable to the attendees. We call this the Preference Convention Optimization problem (PCO).
+\subsection{Preference Conference Optimization Problem}
+We have examined several different variations of scheduling problems as they relate to conferences; we now offer a final variation that will be the subject of study for the rest of the paper. In particular we are interested in not only finding an acceptable schedule but also a schedule that minimizes ``conflicts" to conference attendees. To this end, we will add a new piece of data to the puzzle, namely a set of conference attendees and their preferences for talks they would like to attend. Armed with this information we can attempt to find not only a schedule that meets the requirements of rooms, presenters, etc. but also one that is most acceptable to the attendees. We call this the Preference Conference Optimization problem (PCO).
 \begin{quote}
-	\textsc{Preference Convention Optimization Problem}
+	\textsc{Preference Conference Optimization Problem}
 	
 	\underline{INSTANCE}: Same as ECTTD, but with the additional parameters:
 	\begin{enumerate}[1.]
@@ -278,7 +278,7 @@ We have examined several different variations of scheduling problems as they rel
 \section{Integer programming models}
 
 \subsection{Overview}
-We will present integer programming models that can solve PCO and ECTTD. Integer programming is merely one way of solving these problems, other papers have described strictly combinational methods of solving similar problems \cite{cheng}. The data used to measure the models comes from a real convention held in 2013, which we shall refer to as PC2013. PC2013 had 195 presenters giving a total of 253 talks. Figure \ref{fig_pc2013_graph} helps illustrate the data we worked with: each vertex represents a talk and adjacent vertices share a common presenter and cannot be scheduled at the same time. By Theorem \ref{cttd_np} solving to CTTD is equivalent to asking if this graph admits an $h$-color (for some $h$, the number of timeslots available at the convention).
+We will present integer programming models that can solve PCO and ECTTD. Integer programming is merely one way of solving these problems, other papers have described strictly combinational methods of solving similar problems \cite{cheng}. The data used to measure the models comes from a real conference held in 2013, which we shall refer to as PC2013. PC2013 had 195 presenters giving a total of 253 talks. Figure \ref{fig_pc2013_graph} helps illustrate the data we worked with: each vertex represents a talk and adjacent vertices share a common presenter and cannot be scheduled at the same time. By Theorem \ref{cttd_np} solving to CTTD is equivalent to asking if this graph admits an $h$-color (for some $h$, the number of timeslots available at the conference).
 \begin{figure}[h!]
 	\caption{Presenter conflicts that must be scheduled around in PC2013}
 	\centering
@@ -293,7 +293,7 @@ The first problem we will solve with integer programming is the Extended Course 
 \end{gather*}
 For PC2013, $\text{size of } f = 193 \times 253 \times 37 \times 15 = $ 27,421,440. Although not unheard of, this is a very large number of variables for the solver to work with. However, we know that several (nearly all) of these variables will be zero based on information we have at formulation time. For example, if a presenter $i$ doesn't give talk $j$, then $f(i,j,h,r) = 0$ for all $h \in H, r \in R$. We create a set of variables $\mathcal F \subseteq \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \times R$ where $f_{i,j,h,r} \in \mathcal F \iff $ presenter $i$ gives talk $j$, the talk $j$, presenter $i$ and room $r$ are available at hour $h$, and room $r$ is suitable for the $j$th talk. In addition to this condition, we restrict the inclusion of variables in $\mathcal F$ to the intersection of the available hours of all \emph{co-presenters} (pairs of presenters that give the same talk), e.g. if co-presenters $i,i'$ have availability sets $\{h_2,h_3\}$ and $\{h_3,h_4\}$ (assuming room and talk availability is at least $\{h_2, h_3, h_4\}$) then only variables with $h=h_3$ for these co-presenters and talk will be included. In practice, the reduction of our solution space to only $\mathcal F$ gives us an enormous performance gain. For PC2013, this immediately reduced the number of variables down to 91,514 (a reduction of 99.997\%).
 
-The variables in $\mathcal F$ can be thought of as a sparse representation of the domain of $f$. In our following formulation we will wish to ``iterate" over the dimensions of $f$, but only for those values with corresponding variables in $\mathcal F$. We will use a special convention to represent this. For example, when we say ``for all $j,h,r \in \mathcal F_i$, we mean all variables in $\mathcal F$ of the form $f_{i,j,h,r}$ with $i$ fixed.
+The variables in $\mathcal F$ can be thought of as a sparse representation of the domain of $f$. In our following formulation we will wish to ``iterate" over the dimensions of $f$, but only for those values with corresponding variables in $\mathcal F$. We will use a special conference to represent this. For example, when we say ``for all $j,h,r \in \mathcal F_i$, we mean all variables in $\mathcal F$ of the form $f_{i,j,h,r}$ with $i$ fixed.
 
 In addition to $\mathcal F$ we will use the intermediate variable set $\mathcal G$ for convenience where $g_{j,h,r} \in \mathcal G \iff $ talk $j$ can be given by any presenter at hour $h$ in room $r$. We will now describe a formulation that implements each of the constraints on $f$ in ECTTO.
 \begin{quote}
@@ -328,7 +328,7 @@ We solved this formulation with the open source IP solver CBC on PC2103 with var
 \end{figure}
 
 \subsection{PCO}
-We now turn our attention to the Preference Convention Optimization (PCO) problem. PCO adds an additional layer of complexity to ECTTO by including a matrix of preferences for attendees with the goal of minimizing the number of conflicts caused by concurrent talks. Through experimentation we have found that PCO greatly increases the difficulty of solving our convention scheduling problem. We first present our integer programming model for PCO.
+We now turn our attention to the Preference Conference Optimization (PCO) problem. PCO adds an additional layer of complexity to ECTTO by including a matrix of preferences for attendees with the goal of minimizing the number of conflicts caused by concurrent talks. Through experimentation we have found that PCO greatly increases the difficulty of solving our conference scheduling problem. We first present our integer programming model for PCO.
 
 The PCO model we present builds on our previous ECTTO model. In addition to the $G$ variables which collapse the four dimensional $f$ function down to three dimensions ($\text{talk} \times \text{hour} \times \text{room}$), all the while considering only those variables for which a feasible schedule is even possible given the different availability constraints, we will introduce four new sets for PCO. The first is $z$ which will collapse $g$ to two dimensions ($\text{talk} \times \text{hour}$). Next, we will expand $z$ to $z'$ which will have a three dimensional range from $\text{talk} \times \text{talk} \times \text{hour}$; it will represent if two talks $j, j'$ are both given concurrently at hour $h$. The final set $c$ has the same dimensions and will represent the conflicts (calculated from $W$, the preference matrix) if $j, j'$ are both scheduled at $h$. As with previous models, the corresponding script (e.g. $\mathcal Z$ for $z$) will represent the set of variables that are possible given availability constraints. The final set $w$ summarizes $W$ as a $\text{talk} \times \text{talk} \times \text{hour}$ matrix where each entry is the number of attendees who wish to attend both talks $j,j'$ for all $h$ when $j,j'$ can be given based on talk, presenter, and room availability. Formally, $w_{j,j',h} = |\{e_k \in E \; : \; e_k \text{ has } W_{kj} = 1 \text{ and } W_{kj'} = 1 \}|$ for each $h \in \mathcal{Z}_{j} \cap \mathcal{Z}_{j'}$. We will minimize our model on the sum all elements in $c$.
 \begin{quote}
@@ -430,6 +430,7 @@ Our new objective places a penalty on presenters being multiply booked but expre
 \end{figure}
 
 \section{Conclusion}
+Scheduling conferences remains closely linked to other timetable problems. Perhaps unexpectedly the addition of requiring talks with multiple presenters to have all their presenters scheduled together can even force those similar problems with polynomial-time solutions into the NP-Complete class. Integer programming proved effective in modeling the specific constraints of our problem, and the many advancements in both commercial and open source solvers allowed for many real-world size problems to be solved effectively, although the RSVP variant studied proved significantly harder for IP even after optimization techniques to the model were applied.
 
 \pagebreak
 
