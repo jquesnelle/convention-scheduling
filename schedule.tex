@@ -27,7 +27,7 @@
 \maketitle
 
 \begin{abstract}
-The problem of determining if there is a feasible schedule for a conference given the constraints of rooms, presenters, and attendees is closely related to the so-called timetable problem, some formulations of which are NP-Complete with corresponding optimization problems that are NP-Hard. The complexity classes of various formulations of a conference scheduling problem are given as well as an investigation into models that optimally solve certain types of these problems with integer programming.
+	The problem of determining if there is a feasible schedule for a conference given the constraints of rooms, presenters, and attendees is closely related to the so-called timetable problem, some formulations of which are NP-Complete with corresponding optimization problems that are NP-Hard. The complexity classes of various formulations of a conference scheduling problem are given as well as an investigation into models that optimally solve certain types of these problems with integer programming.
 \end{abstract}
 
 \section{Introduction}
@@ -92,16 +92,16 @@ Although TTD solves an important portion of the problem, the requirements of a c
 \end{quote}
 Now that we have defined our problem it behooves us to determine what complexity class it is in. The problem of determining the chromatic number of a graph (i.e. the minimum number of different colors that can be assigned to a graph's vertices so that no two adjacent vertices share the same color) is NP-Hard and the corresponding decision problem asking if a certain graph admits a $k$-coloring is NP-Complete \cite{garey76_2}. We will provide a reduction of Graph $k$-Colorability to CTTD.
 \begin{thm}
-CTTD is NP-Complete.
+	CTTD is NP-Complete.
 \end{thm}
 \begin{proof}\label{cttd_np}
-We first note that CTTD $\in$ NP. The function $f$ is a certificate of size $nm|H|$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
-
-Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD (whose construction was easily computed in polynomial time). 
-
-If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). But, requirement (c) ensures that in this case $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). Finally, for any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (d).
-
-In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is NP-Complete, CTTD is NP-Complete.
+	We first note that CTTD $\in$ NP. The function $f$ is a certificate of size $nm|H|$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
+	
+	Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD (whose construction was easily computed in polynomial time). 
+	
+	If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). But, requirement (c) ensures that in this case $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). Finally, for any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (d).
+	
+	In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is NP-Complete, CTTD is NP-Complete.
 \end{proof}
 
 \subsection{Basic Conference TTD Problem}
@@ -110,30 +110,30 @@ Lovelace showed that a relaxed version of TTD (called BCS for ``Basic Course Sch
 	\textsc{Basic Timetable Decision Problem}
 	
 	\underline{INSTANCE}:
-		\begin{enumerate}
-			\item a finite set $H$ of hours;
-			\item a collection $P = \{P_1, P_2, \cdots, P_n\}$, where $P_i \subseteq H$ (there are $n$ presenters and $P_i$ is the set of hours during which the $i$th presenter is available for presenting);
-			\item a collection $T = \{T_1, T_2, \cdots, T_m\}$, where $T_j \subseteq H$ (there are $m$ talks and $T_j$ is the set of hours during which the $j$th talk can be given);
-			\item a function $L : \mathbb Z^+ \rightarrow \mathbb Z_0^+$, where $L(n)$ is the maximum number of talks that the $n$th presenter can give;
-			\item a function $S : \mathbb Z^+ \rightarrow \mathbb Z_0^+$, where $S(m)$ is the desired number of instances of the $m$th presentation;
-			\item a function $WTP : \{1,2,\cdots, n\} \times \{1,2,\cdots,m\} \rightarrow \{0,1\}$, where $WTP(i,j)$ indicates if the $i$th presenter is Willing To Present the $j$th talk.
-		\end{enumerate}
-		\underline{QUESTION}: Does there exist a function 
-		\begin{gather*}
-			f(i,j,h) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \rightarrow \{0,1\}
-		\end{gather*}
-		(where $f(i,j,h)=1$ if and only if presenter $i$ gives talk $j$ during hour $h$) such that
-		\begin{enumerate}[(a)]
-			\item $f(i,j,h) = 1 \Rightarrow h \in P_i \cap T_j$ (the presenter and talk are both available to be scheduled at hour $h$);
-			\item $\sum\limits_{h \in H} f'(j,h) = S(j)$ for all $1 \le j \le m$ where $f'(j,h) = 1 \iff \exists i \text{ with } 1 \le i \le n$ such that $f(i,j,h)=1$, and 0 otherwise (the $j$th talk is given the required number of times);
-			\item $\sum\limits_{j=1}^{m} f(i,j,h) \le 1$ for all $1 \le i \le n$ and $h \in H$ (there is no more than one presenter scheduled for each instance of a talk);
-			\item $f(i,j,h) = 1 \Rightarrow WTP(i,j) = 1$ (only presenters willing to give a talk are scheduled for it);
-			\item $\sum\limits_{j=1}^n\sum\limits_{h \in H} f(i,j,h) \le L(i)$ for all $1 \le i \le n$ (the total number of talks that the $i$th presenter is scheduled for is at most their maximum number of presentations)
-			\item $\sum\limits_{j=1}^m f(i,j,h) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously).
-		\end{enumerate}
+	\begin{enumerate}
+		\item a finite set $H$ of hours;
+		\item a collection $P = \{P_1, P_2, \cdots, P_n\}$, where $P_i \subseteq H$ (there are $n$ presenters and $P_i$ is the set of hours during which the $i$th presenter is available for presenting);
+		\item a collection $T = \{T_1, T_2, \cdots, T_m\}$, where $T_j \subseteq H$ (there are $m$ talks and $T_j$ is the set of hours during which the $j$th talk can be given);
+		\item a function $L : \mathbb Z^+ \rightarrow \mathbb Z_0^+$, where $L(n)$ is the maximum number of talks that the $n$th presenter can give;
+		\item a function $S : \mathbb Z^+ \rightarrow \mathbb Z_0^+$, where $S(m)$ is the desired number of instances of the $m$th presentation;
+		\item a function $WTP : \{1,2,\cdots, n\} \times \{1,2,\cdots,m\} \rightarrow \{0,1\}$, where $WTP(i,j)$ indicates if the $i$th presenter is Willing To Present the $j$th talk.
+	\end{enumerate}
+	\underline{QUESTION}: Does there exist a function 
+	\begin{gather*}
+		f(i,j,h) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \rightarrow \{0,1\}
+	\end{gather*}
+	(where $f(i,j,h)=1$ if and only if presenter $i$ gives talk $j$ during hour $h$) such that
+	\begin{enumerate}[(a)]
+		\item $f(i,j,h) = 1 \Rightarrow h \in P_i \cap T_j$ (the presenter and talk are both available to be scheduled at hour $h$);
+		\item $\sum\limits_{h \in H} f'(j,h) = S(j)$ for all $1 \le j \le m$ where $f'(j,h) = 1 \iff \exists i \text{ with } 1 \le i \le n$ such that $f(i,j,h)=1$, and 0 otherwise (the $j$th talk is given the required number of times);
+		\item $\sum\limits_{j=1}^{m} f(i,j,h) \le 1$ for all $1 \le i \le n$ and $h \in H$ (there is no more than one presenter scheduled for each instance of a talk);
+		\item $f(i,j,h) = 1 \Rightarrow WTP(i,j) = 1$ (only presenters willing to give a talk are scheduled for it);
+		\item $\sum\limits_{j=1}^n\sum\limits_{h \in H} f(i,j,h) \le L(i)$ for all $1 \le i \le n$ (the total number of talks that the $i$th presenter is scheduled for is at most their maximum number of presentations)
+		\item $\sum\limits_{j=1}^m f(i,j,h) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously).
+	\end{enumerate}
 \end{quote}
 \begin{rem}
-BTTD $\in$ P \cite{lovelace2010}.
+	BTTD $\in$ P \cite{lovelace2010}.
 \end{rem}
 The difference between TTD and CTTD is the ability for presentations to have multiple presenters, and the requirement that all presenters be scheduled for all instances of a talk. Likewise, we can formulate a modified version of BTTD that incorporates this new constraint which we will call the Basic Conference Timetable Decision problem (BCTTD). 
 \begin{quote}
@@ -145,81 +145,81 @@ The difference between TTD and CTTD is the ability for presentations to have mul
 	\end{enumerate}
 \end{quote}
 \begin{thm}
-BCTTD is NP-Complete.
+	BCTTD is NP-Complete.
 \end{thm}
 \begin{proof}\label{bcttd_np}
-Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $WTP(l,c')=1$ and $WTP(l,d')=1$. For all $1 \le i \le n$, let $L(i)=2$ and for all $1 \le j \le m$, let $S(j)=1$. We now have an instance $(H,P,T,L,S,WTP)$ of BCTTD.
-
-If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-f). As with CTTD we assume (without loss of generality) that $G$ is connected. Then, for any talk $T_j$ (corresponding to vertex $v_j$) by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$ since $S(j)=1$ for all $1 \le j \le m$. If there exist any other $i',h'$ with $f(i',j,h')=1$ then this means that $P_{i'}$ is also scheduled for $T_j$ at $h'$, but since by requirement (d) this tells us that $WTP(i',j)=1$ (and we also have $WTP(i,j)=1$ for the same reason) and thus $WTP(i,j)=WTP(i',j)$ and requirement (c) gives us that $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). For any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (f). Lastly we know that this formulation enumerates all presenters (edges) and talks (vertices) by requirement (e); in particular because $L(i) = 2$ and $\sum_{j=1}^{m} WTP(i,j) = 2$.
+	Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $WTP(l,c')=1$ and $WTP(l,d')=1$. For all $1 \le i \le n$, let $L(i)=2$ and for all $1 \le j \le m$, let $S(j)=1$. We now have an instance $(H,P,T,L,S,WTP)$ of BCTTD.
+	
+	If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-f). As with CTTD we assume (without loss of generality) that $G$ is connected. Then, for any talk $T_j$ (corresponding to vertex $v_j$) by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$ since $S(j)=1$ for all $1 \le j \le m$. If there exist any other $i',h'$ with $f(i',j,h')=1$ then this means that $P_{i'}$ is also scheduled for $T_j$ at $h'$, but since by requirement (d) this tells us that $WTP(i',j)=1$ (and we also have $WTP(i,j)=1$ for the same reason) and thus $WTP(i,j)=WTP(i',j)$ and requirement (c) gives us that $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). For any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (f). Lastly we know that this formulation enumerates all presenters (edges) and talks (vertices) by requirement (e); in particular because $L(i) = 2$ and $\sum_{j=1}^{m} WTP(i,j) = 2$.
 \end{proof}
 Perhaps somewhat surprisingly the mere modification of requirement (c) in BTTD to our stronger version in BCTTD is enough to move the problem from P into NP-Complete. \\
 \begin{center}
-Figure 1: An illustration of a reduction from $k$-Colorability to BCTTD
+	Figure 1: An illustration of a reduction from $k$-Colorability to BCTTD
 \end{center}
 \setcounter{figure}{1}
 \underline{QUESTION}: Does the following graph admit a 3-color?
 \begin{center}
-\includegraphics[scale=0.75]{3colorinstance}
+	\includegraphics[scale=0.75]{3colorinstance}
 \end{center}
 From the construction in the proof for Theorem \ref{bcttd_np}: \\
 \begin{center}
-\begin{tabular}{ l c r }
-$H=\{1,2,3\}$ & $P=\{H,H,H,H,H\}$ & $T=\{H,H,H,H,H\}$
-\end{tabular}
-\begin{tabular}{ c c }
-$WTP=$ \begin{tabular}{ r | c | c | c | c | c }
-$v_1$ & 1 & 1 & 0 & 0 & 0 \\ \hline
-$v_2$ & 1 & 0 & 1 & 0 & 0 \\ \hline
-$v_3$ & 0 & 1 & 1 & 1 & 0 \\ \hline
-$v_4$ & 0 & 0 & 0 & 1 & 1 \\ \hline
-$v_5$ & 0 & 0 & 0 & 0 & 1 \\ \hline
-      & $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
-\end{tabular} & 
-\begin{tabular}{ c c }
-$L=$ \begin{tabular}{ c | c | c | c | c }
-2 & 2 & 2 & 2 & 2 \\ \hline
-$e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
-\end{tabular} & $S=$ \begin{tabular}{ c | c | c | c | c }
-1 & 1 & 1 & 1 & 1 \\ \hline
-$v_1$ & $v_2$ & $v_3$ & $v_4$ & $v_5$
-\end{tabular}
-\end{tabular} 
+	\begin{tabular}{ l c r }
+		$H=\{1,2,3\}$ & $P=\{H,H,H,H,H\}$ & $T=\{H,H,H,H,H\}$
+	\end{tabular}
+	\begin{tabular}{ c c }
+		$WTP=$ \begin{tabular}{ r | c | c | c | c | c }
+			$v_1$ & 1 & 1 & 0 & 0 & 0 \\ \hline
+			$v_2$ & 1 & 0 & 1 & 0 & 0 \\ \hline
+			$v_3$ & 0 & 1 & 1 & 1 & 0 \\ \hline
+			$v_4$ & 0 & 0 & 0 & 1 & 1 \\ \hline
+			$v_5$ & 0 & 0 & 0 & 0 & 1 \\ \hline
+			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+		\end{tabular} & 
+		\begin{tabular}{ c c }
+			$L=$ \begin{tabular}{ c | c | c | c | c }
+				2 & 2 & 2 & 2 & 2 \\ \hline
+				$e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+			\end{tabular} & $S=$ \begin{tabular}{ c | c | c | c | c }
+			1 & 1 & 1 & 1 & 1 \\ \hline
+			$v_1$ & $v_2$ & $v_3$ & $v_4$ & $v_5$
+		\end{tabular}
+	\end{tabular} 
 \end{tabular}
 \end{center}
 An accepting solution to BCTTD: \\
 \begin{center}
-$f=$
-\begin{tabular}{ c c c }
-\begin{tabular}{r | c | c | c | c | c}
-$v_1$ & 1 & 1 & 0 & 0 & 0 \\ \hline
-$v_2$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-$v_3$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-$v_4$ & 0 & 0 & 0 & 1 & 1 \\ \hline
-$v_5$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-      & $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
-\end{tabular} & 
-\begin{tabular}{r | c | c | c | c | c}
-$v_1$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-$v_2$ & 1 & 0 & 1 & 0 & 0 \\ \hline
-$v_3$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-$v_4$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-$v_5$ & 0 & 0 & 0 & 0 & 1 \\ \hline
-      & $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
-\end{tabular} & 
-\begin{tabular}{r | c | c | c | c | c}
-$v_1$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-$v_2$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-$v_3$ & 0 & 1 & 1 & 1 & 0 \\ \hline
-$v_4$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-$v_5$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-      & $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
-\end{tabular} \\
-$h=1$ & $h=2$ & $h=3$
-\end{tabular}
+	$f=$
+	\begin{tabular}{ c c c }
+		\begin{tabular}{r | c | c | c | c | c}
+			$v_1$ & 1 & 1 & 0 & 0 & 0 \\ \hline
+			$v_2$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_3$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_4$ & 0 & 0 & 0 & 1 & 1 \\ \hline
+			$v_5$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+		\end{tabular} & 
+		\begin{tabular}{r | c | c | c | c | c}
+			$v_1$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_2$ & 1 & 0 & 1 & 0 & 0 \\ \hline
+			$v_3$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_4$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_5$ & 0 & 0 & 0 & 0 & 1 \\ \hline
+			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+		\end{tabular} & 
+		\begin{tabular}{r | c | c | c | c | c}
+			$v_1$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_2$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_3$ & 0 & 1 & 1 & 1 & 0 \\ \hline
+			$v_4$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_5$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+		\end{tabular} \\
+		$h=1$ & $h=2$ & $h=3$
+	\end{tabular}
 \end{center}
 Which gives rise to the coloring (colors represented as filled, solid, and dashed vertices):
 \begin{center}
-\includegraphics[scale=0.75]{3colorinstancecolored}
+	\includegraphics[scale=0.75]{3colorinstancecolored}
 \end{center}
 
 \subsection{Extended Conference TTD Problem}
@@ -230,30 +230,30 @@ CTTD ensures that each presenter is correctly scheduled for their presentations 
 	\textsc{Extended Conference Timetable Decision Problem}
 	
 	\underline{INSTANCE}: Same as CTTD, but with the additional parameters:
-		\begin{enumerate}[1.]
-			\setcounter{enumi}{4}
-			\item a finite set $R$ of rooms;
-			\item a collection $\{A_1,A_2,\cdots,A_r\}$, where $A_k \subseteq H$ (there are $r=|R|$ rooms and $A_k$ is the set of hours during which the $k$th room is available);
-			\item a collection $\{S_1,S_2,\cdots,S_m\}$, where $S_l \subseteq R$ (there are $m$ talks and $S_m$ is the set of rooms that the $l$th presentation may be given in)
-		\end{enumerate}
+	\begin{enumerate}[1.]
+		\setcounter{enumi}{4}
+		\item a finite set $R$ of rooms;
+		\item a collection $\{A_1,A_2,\cdots,A_r\}$, where $A_k \subseteq H$ (there are $r=|R|$ rooms and $A_k$ is the set of hours during which the $k$th room is available);
+		\item a collection $\{S_1,S_2,\cdots,S_m\}$, where $S_l \subseteq R$ (there are $m$ talks and $S_m$ is the set of rooms that the $l$th presentation may be given in)
+	\end{enumerate}
 	\underline{QUESTION}: Does there exist a function 
-		\begin{gather*}
-			f(i,j,h,r) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \times R \rightarrow \{0,1\}
-		\end{gather*}
-		(where $f(i,j,h,r)=1$ if and only if presenter $i$ gives talk $j$ during hour $h$ in room $r$) such that
-		\begin{enumerate}[(a)]
-			\item $f(i,j,h,r) = 1 \Rightarrow h \in P_i \cap T_j \cap A_r \land r \in S_j$ (the $i$th presenter, $j$th presentation and room $r$ are all available to be scheduled at hour $h$ and room $r$ is suitable for the $j$th presentation);
-			\item $\sum\limits_{r \in R}\sum\limits_{h \in H} f(i,j,h,r) = G_{ij}$ for all $1 \le i \le n$ and $1 \le j \le m$ (the $i$th presenter was scheduled for the $j$th presentation the required number of times);
-			\item $G_{ij} > 0 \land G_{i'j} > 0 \Rightarrow f(i,j,h,r)=f(i',j,h,r)$ for all $1 \le i,i' \le n$, $1 \le j \le m$, $h \in H$, and $r \in R$ (all presenters that are required to give a talk must be present at all instances of that talk);
-			\item $\sum\limits_{r \in R}\sum\limits_{j=1}^m f(i,j,h,r) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously);
-			\item $\sum\limits_{j=1}^m f'(j,h,r) \le 1$ for each $h \in H$ and $r \in R$ where $f'(j,h,r) = 1 \iff \exists i \text{ with } 1 \le i \le n$ such that $f(i,j,h,r)=1$, and 0 otherwise (room $r$ is scheduled for at most one talk at hour $h$).
-		\end{enumerate}
+	\begin{gather*}
+		f(i,j,h,r) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \times R \rightarrow \{0,1\}
+	\end{gather*}
+	(where $f(i,j,h,r)=1$ if and only if presenter $i$ gives talk $j$ during hour $h$ in room $r$) such that
+	\begin{enumerate}[(a)]
+		\item $f(i,j,h,r) = 1 \Rightarrow h \in P_i \cap T_j \cap A_r \land r \in S_j$ (the $i$th presenter, $j$th presentation and room $r$ are all available to be scheduled at hour $h$ and room $r$ is suitable for the $j$th presentation);
+		\item $\sum\limits_{r \in R}\sum\limits_{h \in H} f(i,j,h,r) = G_{ij}$ for all $1 \le i \le n$ and $1 \le j \le m$ (the $i$th presenter was scheduled for the $j$th presentation the required number of times);
+		\item $G_{ij} > 0 \land G_{i'j} > 0 \Rightarrow f(i,j,h,r)=f(i',j,h,r)$ for all $1 \le i,i' \le n$, $1 \le j \le m$, $h \in H$, and $r \in R$ (all presenters that are required to give a talk must be present at all instances of that talk);
+		\item $\sum\limits_{r \in R}\sum\limits_{j=1}^m f(i,j,h,r) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously);
+		\item $\sum\limits_{j=1}^m f'(j,h,r) \le 1$ for each $h \in H$ and $r \in R$ where $f'(j,h,r) = 1 \iff \exists i \text{ with } 1 \le i \le n$ such that $f(i,j,h,r)=1$, and 0 otherwise (room $r$ is scheduled for at most one talk at hour $h$).
+	\end{enumerate}
 \end{quote}
 \begin{cor}
-ECTTD is NP-Complete.
+	ECTTD is NP-Complete.
 \end{cor}
 \begin{proof}
-Let $L=(H,P,T,G)$ be an instance of CTTD. Let $R=T$, $A=\{H,H,\cdots,H\}$ with $|A|=R$ (i.e. each $A_k=H$), and  likewise let $S=\{H,H,\cdots,H\}$ with $|S|=|T|$. We now have an instance $L'=(H,P,T,G,R,A,S)$ of ECTTD (we note with slight amusement the embedded GRAPHS anagram). As with CTTD if an algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d).
+	Let $L=(H,P,T,G)$ be an instance of CTTD. Let $R=T$, $A=\{H,H,\cdots,H\}$ with $|A|=R$ (i.e. each $A_k=H$), and  likewise let $S=\{H,H,\cdots,H\}$ with $|S|=|T|$. We now have an instance $L'=(H,P,T,G,R,A,S)$ of ECTTD (we note with slight amusement the embedded GRAPHS anagram). As with CTTD if an algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d).
 \end{proof}
 
 \subsection{Preference Conference Optimization Problem}
@@ -282,14 +282,14 @@ We will present integer programming models that can solve PCO and ECTTD. Integer
 \begin{figure}[h!]
 	\caption{Presenter conflicts that must be scheduled around in PC2013}
 	\centering
-		\includegraphics[scale=0.2]{penguiconconflict}
+	\includegraphics[scale=0.2]{penguiconconflict}
 	\label{fig_pc2013_graph}
 \end{figure}
 
 \subsection{ECTTO}
 The first problem we will solve with integer programming is the Extended Course Timetable Optimization (ECTTO) problem, which is the optimization version of ECTTD (i.e. find a schedule, not simply verify one exists). The goal of ECTTO is to find a scheduling function $f$. A possible problem is that $f$ can be very big.
 \begin{gather*}
-\text{size of } f = \text{\# of presenters } \times \text{ \# of talks } \times \text{ \# of hours } \times \text{ \# of rooms }
+	\text{size of } f = \text{\# of presenters } \times \text{ \# of talks } \times \text{ \# of hours } \times \text{ \# of rooms }
 \end{gather*}
 For PC2013, $\text{size of } f = 193 \times 253 \times 37 \times 15 = $ 27,421,440. Although not unheard of, this is a very large number of variables for the solver to work with. However, we know that several (nearly all) of these variables will be zero based on information we have at formulation time. For example, if a presenter $i$ doesn't give talk $j$, then $f(i,j,h,r) = 0$ for all $h \in H, r \in R$. We create a set of variables $\mathcal F \subseteq \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \times R$ where $f_{i,j,h,r} \in \mathcal F \iff $ presenter $i$ gives talk $j$, the talk $j$, presenter $i$ and room $r$ are available at hour $h$, and room $r$ is suitable for the $j$th talk. In addition to this condition, we restrict the inclusion of variables in $\mathcal F$ to the intersection of the available hours of all \emph{co-presenters} (pairs of presenters that give the same talk), e.g. if co-presenters $i,i'$ have availability sets $\{h_2,h_3\}$ and $\{h_3,h_4\}$ (assuming room and talk availability is at least $\{h_2, h_3, h_4\}$) then only variables with $h=h_3$ for these co-presenters and talk will be included. In practice, the reduction of our solution space to only $\mathcal F$ gives us an enormous performance gain. For PC2013, this immediately reduced the number of variables down to 91,514 (a reduction of 99.997\%).
 
@@ -297,17 +297,17 @@ The variables in $\mathcal F$ can be thought of as a sparse representation of th
 
 In addition to $\mathcal F$ we will use the intermediate variable set $\mathcal G$ for convenience where $g_{j,h,r} \in \mathcal G \iff $ talk $j$ can be given by any presenter at hour $h$ in room $r$. We will now describe a formulation that implements each of the constraints on $f$ in ECTTO.
 \begin{quote}
-\textbf{ECTTO formulation}
-\begin{flalign}
-&\text{minimize: } 0& \\
-&\text{subject to:}&\\
-&\sum_{h,r \in \mathcal F_{i,j}} f_{i,j,h,r} = G_{ij}& \text{for every presenter $i$ and talk $j$}\label{ectto_ip_constraint_b}\\
-&f_{i,j,h,r} - f_{i',j,h,r} = 0\label{ectto_ip_constraint_c_2}& \text{for every talk $j$ with co-presenters $i$, $i'$}\\
-&\sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \le 1& \text{for every presenter $i$ and hour $h$ }\label{ectto_ip_constraint_d}\\
-&\left(\sum_{i \in \mathcal F_{j,h,r}} f_{i,j,h,r}\right) - U \times g_{j,h,r} \le 0& \text{for each $g_{j,h,r} \in \mathcal G$} \label{ectto_ip_constraint_e_1}\\
-&\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le 1& \text{for each hour $h$ and room $r$}\label{ectto_ip_constraint_e_2}\\
-&\text{binary: } f_{i,j,h,r}, g_{j,h,r}
-\end{flalign}
+	\textbf{ECTTO formulation}
+	\begin{flalign}
+		&\text{minimize: } 0& \\
+		&\text{subject to:}&\\
+		&\sum_{h,r \in \mathcal F_{i,j}} f_{i,j,h,r} = G_{ij}& \text{for every presenter $i$ and talk $j$}\label{ectto_ip_constraint_b}\\
+		&f_{i,j,h,r} - f_{i',j,h,r} = 0\label{ectto_ip_constraint_c_2}& \text{for every talk $j$ with co-presenters $i$, $i'$}\\
+		&\sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \le 1& \text{for every presenter $i$ and hour $h$ }\label{ectto_ip_constraint_d}\\
+		&\left(\sum_{i \in \mathcal F_{j,h,r}} f_{i,j,h,r}\right) - U \times g_{j,h,r} \le 0& \text{for each $g_{j,h,r} \in \mathcal G$} \label{ectto_ip_constraint_e_1}\\
+		&\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le 1& \text{for each hour $h$ and room $r$}\label{ectto_ip_constraint_e_2}\\
+		&\text{binary: } f_{i,j,h,r}, g_{j,h,r}
+	\end{flalign}
 \end{quote}
 The first requirement (a) of ECTTO merely enforces all availability and suitability sets. We implicitly enforce this in our model by considering only the variables in $\mathcal F$. As such, no specific constraints are needed in our model.
 
@@ -323,7 +323,7 @@ We solved this formulation with the open source IP solver CBC on PC2103 with var
 \begin{figure}[h!]
 	\caption{Run time of ECTTO model}
 	\centering
-		\input ecttd_model_run_time
+	\input ecttd_model_run_time
 	\label{ectto_run_time}
 \end{figure}
 
@@ -332,22 +332,22 @@ We now turn our attention to the Preference Conference Optimization (PCO) proble
 
 The PCO model we present builds on our previous ECTTO model. In addition to the $G$ variables which collapse the four dimensional $f$ function down to three dimensions ($\text{talk} \times \text{hour} \times \text{room}$), all the while considering only those variables for which a feasible schedule is even possible given the different availability constraints, we will introduce four new sets for PCO. The first is $z$ which will collapse $g$ to two dimensions ($\text{talk} \times \text{hour}$). Next, we will expand $z$ to $z'$ which will have a three dimensional range from $\text{talk} \times \text{talk} \times \text{hour}$; it will represent if two talks $j, j'$ are both given concurrently at hour $h$. The final set $c$ has the same dimensions and will represent the conflicts (calculated from $W$, the preference matrix) if $j, j'$ are both scheduled at $h$. As with previous models, the corresponding script (e.g. $\mathcal Z$ for $z$) will represent the set of variables that are possible given availability constraints. The final set $w$ summarizes $W$ as a $\text{talk} \times \text{talk} \times \text{hour}$ matrix where each entry is the number of attendees who wish to attend both talks $j,j'$ for all $h$ when $j,j'$ can be given based on talk, presenter, and room availability. Formally, $w_{j,j',h} = |\{e_k \in E \; : \; e_k \text{ has } W_{kj} = 1 \text{ and } W_{kj'} = 1 \}|$ for each $h \in \mathcal{Z}_{j} \cap \mathcal{Z}_{j'}$. We will minimize our model on the sum all elements in $c$.
 \begin{quote}
-\textbf{PCO formulation}
-\begin{flalign}
-&\text{minimize: } \sum_{j,j',h \in \mathcal C} c_{j,j',h}& \label{pco_ip_objective} \\
-&\text{subject to:}&\\
-&\sum_{h,r \in \mathcal F_{i,j}} f_{i,j,h,r} = G_{ij}& \text{for every presenter $i$ and talk $j$}\label{pco_ip_constraint_b}\\
-&f_{i,j,h,r} - f_{i',j,h,r} = 0\label{pco_ip_constraint_c_2}& \text{for every talk $j$ with co-presenters $i$, $i'$}\\
-&\sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \le 1& \text{for every presenter $i$ and hour $h$ }\label{pco_ip_constraint_d}\\
-&\left(\sum_{i \in \mathcal F_{j,h,r}} f_{i,j,h,r}\right) - U \times g_{j,h,r} \le 0& \text{for each $g_{j,h,r} \in \mathcal G$} \label{pco_ip_constraint_e_1}\\
-&\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le 1& \text{for each hour $h$ and room $r$}\label{pco_ip_constraint_e_2}\\
-&\left(\sum_{j,h \in \mathcal G_{r}} g_{j,h,r}\right) - U \times z_{j,h} \le 0& \text{for each room $r$}\label{pco_ip_constraint_z}\\
-&\sum_{h \in \mathcal Z_{j}} z_{j,h} = G_{ij}& \text{for each talk $j$ \text{ and some presenter $i$}}\label{pco_ip_constraint_z_2}\\
-&z_{j,h} + z_{j',h} - 2 \times z'_{j,j',h} \le 1& \text{for each hour $h$ and $j,j' \in \mathcal Z_h$ with $j \ne j'$}\label{pco_ip_constraint_z'} \\
-&c_{j,j',h} - w_{j,j',h} \times z'_{j,j',h} = 0& \text{for all $j,j',h \in \mathcal {Z'}$} \label{pco_ip_constraint_w}\\
-&\text{binary: } f_{i,j,h,r}, \; g_{j,h,r}, \; z_{j,h}, \; z'_{j,j',h}&\\
-&\text{integer: } c_{j,j',h}&
-\end{flalign}
+	\textbf{PCO formulation}
+	\begin{flalign}
+		&\text{minimize: } \sum_{j,j',h \in \mathcal C} c_{j,j',h}& \label{pco_ip_objective} \\
+		&\text{subject to:}&\\
+		&\sum_{h,r \in \mathcal F_{i,j}} f_{i,j,h,r} = G_{ij}& \text{for every presenter $i$ and talk $j$}\label{pco_ip_constraint_b}\\
+		&f_{i,j,h,r} - f_{i',j,h,r} = 0\label{pco_ip_constraint_c_2}& \text{for every talk $j$ with co-presenters $i$, $i'$}\\
+		&\sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \le 1& \text{for every presenter $i$ and hour $h$ }\label{pco_ip_constraint_d}\\
+		&\left(\sum_{i \in \mathcal F_{j,h,r}} f_{i,j,h,r}\right) - U \times g_{j,h,r} \le 0& \text{for each $g_{j,h,r} \in \mathcal G$} \label{pco_ip_constraint_e_1}\\
+		&\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le 1& \text{for each hour $h$ and room $r$}\label{pco_ip_constraint_e_2}\\
+		&\left(\sum_{j,h \in \mathcal G_{r}} g_{j,h,r}\right) - U \times z_{j,h} \le 0& \text{for each room $r$}\label{pco_ip_constraint_z}\\
+		&\sum_{h \in \mathcal Z_{j}} z_{j,h} = G_{ij}& \text{for each talk $j$ \text{ and some presenter $i$}}\label{pco_ip_constraint_z_2}\\
+		&z_{j,h} + z_{j',h} - 2 \times z'_{j,j',h} \le 1& \text{for each hour $h$ and $j,j' \in \mathcal Z_h$ with $j \ne j'$}\label{pco_ip_constraint_z'} \\
+		&c_{j,j',h} - w_{j,j',h} \times z'_{j,j',h} = 0& \text{for all $j,j',h \in \mathcal {Z'}$} \label{pco_ip_constraint_w}\\
+		&\text{binary: } f_{i,j,h,r}, \; g_{j,h,r}, \; z_{j,h}, \; z'_{j,j',h}&\\
+		&\text{integer: } c_{j,j',h}&
+	\end{flalign}
 \end{quote}
 Constraints \ref{pco_ip_constraint_b} - \ref{pco_ip_constraint_e_2} are the as our model for ECTTO. Constraint \ref{pco_ip_constraint_z} begins to build the $z$ variables which will be 0-1 indicators of talk $j$ being given at hour $h$ via the same boolean cast mechanism described previously by collapsing the room entries for $j,h$ in $g$. To ensure that only the correct number of $z$s are set to one, constraint \ref{pco_ip_constraint_z_2} sums all hours $h$ for each talk $j$ and sets it equal to the number of times that talk $j$ was set to be given in the problem instance (the matrix $G$). It is of note that we pick \emph{any} presenter $i$'s entry in $G$ for talk $j$; although it is possible that a co-presenter $i'$ may have a different value for $G_{i'j}$ requirement (c) of PCO explicitly forbids this since it would be impossible for all co-presenters to be at all instances of a talk if they had different entries for their shared talk $j$, thus we can pick any presenter $i$.
 
@@ -355,9 +355,9 @@ The $z$ variables will now be used to generate $z'$, which will indicate if a pa
 
 To measure the efficiency of our model we tested it on our sample set PC2013. Attendance figures we recorded for each talk given at PC2013; a distribution of the attendance per talk is shown in Figure \ref{2013_attendance_distribution}.
 \begin{figure}[h!]
-\caption{Distribution of attendance at PC2013}
+	\caption{Distribution of attendance at PC2013}
 	\centering
-		\input 2013_attendance_distribution
+	\input 2013_attendance_distribution
 	\label{2013_attendance_distribution}
 \end{figure}
 The sum of all attendance counts was 4101 \cite{pc2013_attendance} for around 1000 unique attendees. For the purposes of testing our model created a $W$ such that $\sum\limits_{i=0}^{n} W_{ij}$ was equal to the attendance count for that talk $j$, i.e. we created an ``RSVP" for each real talk attendance at PC2013. Since individual attendee attendance wasn't tracked (only totals were) we took some liberties in distributing the RSVPs across the attendees in our model. We first randomly spread the RSVPs over the attendees using a uniform distribution; that is, if talk $j$ had an attendance of 24 in PC2013 then 24 attendees were randomly chosen to attend this talk. We solved our model with commercial solver Gurobi which returned a solution with an objective value of 0 after 64 seconds\footnote{PCO models were run on a machine with 4 12-core Intel Xeon E5-2695 CPUs running at 2.4 GHz with 96 GB of RAM. The authors would like to thank the SECS department at Oakland University for graciously providing the computation time for this paper. They would also like to thank Gurobi Optimization, Inc. for furnishing a free academic license of their Gurobi Optimizer.} i.e. a schedule with absolutely no attendee conflicts.
@@ -369,62 +369,62 @@ One of the reasons integer programming models can explode in running time is whe
 
 Two rooms will be said to be \emph{symmetric} if they have the same suitability and availability sets, i.e. for rooms $R_\alpha$ and $R_\beta$ we have that $R_\alpha$ and $R_\beta$ are symmetric if and only if
 \begin{gather*}
-A_\alpha = A_\beta \quad \text{and} \\
-\{i \; | \; R_\alpha \in S_i \text{ for all } 1 \le i \le m\} = \{i \; | \; R_\beta \in S_i \text{ for all } 1 \le i \le m\}.
+	A_\alpha = A_\beta \quad \text{and} \\
+	\{i \; | \; R_\alpha \in S_i \text{ for all } 1 \le i \le m\} = \{i \; | \; R_\beta \in S_i \text{ for all } 1 \le i \le m\}.
 \end{gather*}
 To break the symmetry we create room \emph{classes} which will represent several rooms with the same attributes. First, we make a new room set $R' = \{ \{r_1, r_2, \cdots, r_p \} \; | \; \text{all } r \in R \text{ are symmetric with each other} \}$. The corresponding new availability set $A'$ has simply the common availability set for each new $r' \in R'$. For the new suitability set $S'$ we replace each instance of $r$ with the room class that $r$ is a member of. When we solve our model talks will be booked to room classes, avoiding the symmetry that arises by having to consider two essentially ``equal" rooms separately. When our model is solved we will have bookings in room classes, and we can arbitrarily assign the talk to any room in that class. We must make only one adjustment to our model: Constraint \ref{pco_ip_constraint_e_2} in the PCO model ensures that each room has only one talk booked in it per hour. For our room classes we wish to relax this, requiring only that the number of bookings be at most the number of rooms in the class; this way, when we assign actual rooms from the solved model we can match talks to rooms in a one-to-one way. Formally, we will change Constraint \ref{pco_ip_constraint_e_2} to
 \begin{gather}
-\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le |r|.
+	\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le |r|.
 \end{gather}
 It is easy to see that this model degenerates to our regular PCO model when no rooms are symmetric; in this case each room class would contain only one room. In practice the removal of the room symmetries led to around a 5x performance increase for our solver on PC2013 which contained only three room classes but had fourteen rooms (see Figure \ref{2013_normal_sigma_run_time}). 
 
 One method of potentially improving the performance of integer programming solvers is to \emph{dualize} the objective, by moving some of the constraints into the objective. We chose to dualize constraint (d), namely that no presenter is scheduled for more than one talk per hour. We first created 0-1 indicator variables $d_{i,h} = 1 \iff $ presenter $i$ is doubly (or more) booked at hour $h$ by changing \ref{pco_ip_constraint_d} (which enforced (d)) to
 \begin{gather}
-\left( \sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \right) - U \times d_{i,h} \le 1. \label{pco_ip_dualized_d}
+	\left( \sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \right) - U \times d_{i,h} \le 1. \label{pco_ip_dualized_d}
 \end{gather}
 The left hand side of \ref{pco_ip_dualized_d} is the number of times that presenter $i$ is scheduled at hour $h$, and $d_{i,h}$ may be 0 or 1 if this sum is less than 2, but must be 1 if the sum is 2 or greater. We then changed the objective (\ref{pco_ip_objective}) to 
 \begin{gather}
-\text{minimize: } \sum_{j,j',h \in \mathcal C} c_{j,j',h} + \sum_{i,h \in \mathcal D} U \times d_{i,h}.
+	\text{minimize: } \sum_{j,j',h \in \mathcal C} c_{j,j',h} + \sum_{i,h \in \mathcal D} U \times d_{i,h}.
 \end{gather}
 Our new objective places a penalty on presenters being multiply booked but expressly forbid it, but this penalty is arbitrarily large (controlled by our magic large constant $U$) -- as such it should be ``obvious" when such a situation has occurred. In practice, dualizing PCO led to moderate performance increases (around 75\% faster, see Figure \ref{2013_normal_sigma_run_time}).
 \begin{figure}[h!]
-\caption{Run time of PCO model with decreasing $\sigma$}
+	\caption{Run time of PCO model with decreasing $\sigma$}
 	\centering
-		\input 2013_normal_sigma_run_time \\
+	\input 2013_normal_sigma_run_time \\
 	\begin{tabular}{| l | r | r | r | r | r | r | r | r | r | r | r | r | r | r | r |}
-	\hline
-	& 400 & 390	 & 380  & 370 & 360 & 350 & 340 & 330 & 320 & 310 & 300 & 290 & 280 & 270 & 260 \\
-	\hline
-	Rooms & 5.4 & 5.2 & 9 & 5.8 & 4.6 & 10 & 6.2 & 6.4 & 9.4 & 7 & 6.8 & 7 & 10.6 & 13.4 & 9.6 \\
-	\hline
-	Classes & 0.8 & 0.6 & 4 & 0.8 & 1.8 & 1.2 & 1 & 0.8 & 3 & 0.6 & 3 & 0.4 & 2.2 & 0.8 & 4.6 \\
-	\hline
-	Dual & 0.4 & 0.2 & 0.4 & 0.4 & 0.4 & 0.4 & 1.4 & 1.6 & 1 & 1 & 0.8 & 1.4 & 0.8 & 0.8 & 1.8 \\
-	\hline
+		\hline
+		& 400 & 390	 & 380  & 370 & 360 & 350 & 340 & 330 & 320 & 310 & 300 & 290 & 280 & 270 & 260 \\
+		\hline
+		Rooms & 5.4 & 5.2 & 9 & 5.8 & 4.6 & 10 & 6.2 & 6.4 & 9.4 & 7 & 6.8 & 7 & 10.6 & 13.4 & 9.6 \\
+		\hline
+		Classes & 0.8 & 0.6 & 4 & 0.8 & 1.8 & 1.2 & 1 & 0.8 & 3 & 0.6 & 3 & 0.4 & 2.2 & 0.8 & 4.6 \\
+		\hline
+		Dual & 0.4 & 0.2 & 0.4 & 0.4 & 0.4 & 0.4 & 1.4 & 1.6 & 1 & 1 & 0.8 & 1.4 & 0.8 & 0.8 & 1.8 \\
+		\hline
 	\end{tabular} \\
 	\hfill \break
 	\begin{tabular}{| l | r | r | r | r | r | r | r | r | r | r | r |}
-	\hline
-	 & 250 & 240 & 230 & 220 & 210 & 200 & 190 & 180 & 170 & 160 & 150 \\
-	\hline
-	Rooms & 12.8 & 19.2 & 22.8 & 27.4 & 24 & 22.8 & 32.8 & 38.6 & 53.4 & 181.6 & 196.2 \\
-	\hline
-	Classes & 6 & 5 & 7.6 & 7.6 & 4.8 & 10.2 & 13.8 & 11.8 & 25 & 165.4 & 156.8 \\
-	\hline
-	Dual & 2.2 & 3.4 & 1.8 & 2 & 2.8 & 4.8 & 4.8 & 6.8 & 13 & 8.4 & 45.2 \\
-	\hline	
+		\hline
+		& 250 & 240 & 230 & 220 & 210 & 200 & 190 & 180 & 170 & 160 & 150 \\
+		\hline
+		Rooms & 12.8 & 19.2 & 22.8 & 27.4 & 24 & 22.8 & 32.8 & 38.6 & 53.4 & 181.6 & 196.2 \\
+		\hline
+		Classes & 6 & 5 & 7.6 & 7.6 & 4.8 & 10.2 & 13.8 & 11.8 & 25 & 165.4 & 156.8 \\
+		\hline
+		Dual & 2.2 & 3.4 & 1.8 & 2 & 2.8 & 4.8 & 4.8 & 6.8 & 13 & 8.4 & 45.2 \\
+		\hline	
 	\end{tabular} \\
 	\hfill \break
 	\begin{tabular}{| l | r | r | r | r | r |}
-	\hline
-	& 140 & 130 & 120 & 110 & 100 \\
-	\hline
-	Rooms & 907 & 553.6 & 4277.8 & 7793.4 & 22683.7 \\
-	\hline
-	Classes & 75.4 & 329.2 & 353.2 & 3884.6 & 4179.2 \\
-	\hline
-	Dual & 68.8 & 156.6 & 159.8 & 510.8 & 3282.6 \\
-	\hline
+		\hline
+		& 140 & 130 & 120 & 110 & 100 \\
+		\hline
+		Rooms & 907 & 553.6 & 4277.8 & 7793.4 & 22683.7 \\
+		\hline
+		Classes & 75.4 & 329.2 & 353.2 & 3884.6 & 4179.2 \\
+		\hline
+		Dual & 68.8 & 156.6 & 159.8 & 510.8 & 3282.6 \\
+		\hline
 	\end{tabular}
 	\label{2013_normal_sigma_run_time}
 \end{figure}
@@ -435,28 +435,28 @@ Scheduling conferences remains closely linked to other timetable problems. Perha
 \pagebreak
 
 \begin{thebibliography}{9}
-\bibitem{even76}
-  Even, S., A. Itai, and A. Shamir. 1976. On the complexity of timetable and multicommodity flow problems. SIAM Journal on Computing 5, (4) (12): 691-13
-\bibitem{garey76}
-  Garey, M., and D. Johnson. 1976. \underline{Computers and Intractability: A Guide to the Theory of NP-Completeness}. New York: W. H. Freeman
-\bibitem{lovelace2010}
-  Lovelace, A. 2010. On the complexity of scheduling university classes. M.S. in Computer Science Thesis. California Polytechnic State University: U.S.A.	
-\bibitem{garey76_2}
-  Garey, M., D. Johnson, and L. Stockmeyer. 1976. Some simplified NP-Complete graph problems. Theoretical Computer Science 1: 237-267
-\bibitem{cheng}
-  Cheng, E., Kleinberg, S., Kruk, S., Lindsey, W., and D. Steffy 2004. A strictly combinational approach to a university exam scheduling problem. Congressus Numerantium 167: 121-132
-\bibitem{pc2013_attendance}
-  Penguicon Programming Ops. \underline{http://penguicon.info/doku.php/programmingops?s[]=attendance}. Retried November 6, 2014
-\bibitem{scip}
-  Achterberg, T. 2009. SCIP: solving constraint integer programs. Mathematical Programming Computation, Volume 1, Number 1: 1-41
-\bibitem{zimpl}
-  Koch, T. 2004. Rapid Mathematical Programming. Ph.D. Thesis. Technische Universit{\"a}t Berlin. Germany
-\bibitem{sherali}
-  Sherali, H.D., and J.C. Smith. 2001. Improving Discrete Model Representations via Symmetry Considerations. Managements Science 47: 1396-1407.
-\bibitem{margot}
-  Margot, F. 2009. Symmetry in Integer Linear Programming. 2010. \underline{50 Years of Integer Programming 1958-2008}, Chapter 16: 647-681. Springer.
-\bibitem{ostrowski}
-  Ostrowski, J. 2008. Symmetry in Integer Programming. Ph.D. Thesis. Lehigh University: U.S.A. 
+	\bibitem{even76}
+	Even, S., A. Itai, and A. Shamir. 1976. On the complexity of timetable and multicommodity flow problems. SIAM Journal on Computing 5, (4) (12): 691-13
+	\bibitem{garey76}
+	Garey, M., and D. Johnson. 1976. Computers and Intractability: A Guide to the Theory of NP-Completeness. New York: W. H. Freeman
+	\bibitem{lovelace2010}
+	Lovelace, A. 2010. On the complexity of scheduling university classes. M.S. in Computer Science Thesis. California Polytechnic State University: U.S.A.	
+	\bibitem{garey76_2}
+	Garey, M., D. Johnson, and L. Stockmeyer. 1976. Some simplified NP-Complete graph problems. Theoretical Computer Science 1: 237-267
+	\bibitem{cheng}
+	Cheng, E., Kleinberg, S., Kruk, S., Lindsey, W., and D. Steffy 2004. A strictly combinational approach to a university exam scheduling problem. Congressus Numerantium 167: 121-132
+	\bibitem{pc2013_attendance}
+	Penguicon Programming Ops. http://penguicon.info/doku.php/programmingops?s[]=attendance. Retried November 6, 2014
+	\bibitem{scip}
+	Achterberg, T. 2009. SCIP: solving constraint integer programs. Mathematical Programming Computation, Volume 1, Number 1: 1-41
+	\bibitem{zimpl}
+	Koch, T. 2004. Rapid Mathematical Programming. Ph.D. Thesis. Technische Universit{\"a}t Berlin. Germany
+	\bibitem{sherali}
+	Sherali, H.D., and J.C. Smith. 2001. Improving Discrete Model Representations via Symmetry Considerations. Managements Science 47: 1396-1407.
+	\bibitem{margot}
+	Margot, F. 2009. Symmetry in Integer Linear Programming. 2010. 50 Years of Integer Programming 1958-2008, Chapter 16: 647-681. Springer.
+	\bibitem{ostrowski}
+	Ostrowski, J. 2008. Symmetry in Integer Programming. Ph.D. Thesis. Lehigh University: U.S.A. 
 \end{thebibliography}
 
 \end{document}
