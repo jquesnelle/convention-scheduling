@@ -18,16 +18,29 @@
 \newtheorem{rem}[thm]{Remark}
 \numberwithin{equation}{section}
 
+\newcommand{\cNP}{$\mathcal{NP}$}
+\newcommand{\cP}{$\mathcal{P}$}
+
 %opening
-\title{On the complexity of scheduling conferences}
-\author{Jeffrey Quesnelle\\Oakland University \and Daniel Steffy\\Oakland University}
+\title{Scheduling a conference to minimize RSVP conflicts}
+\author{
+Jeffrey Quesnelle\\
+Mathematics and Statistics\\
+Oakland University \and 
+Daniel Steffy\\
+Mathematics and Statistics\\
+Oakland University}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-	The problem of determining if there is a feasible schedule for a conference given the constraints of rooms, presenters, and attendees is closely related to the so-called timetable problem, some formulations of which are NP-Complete with corresponding optimization problems that are NP-Hard. The complexity classes of various formulations of a conference scheduling problem are given as well as an investigation into models that optimally solve certain types of these problems with integer programming.
+This paper describes a conference scheduling problem where, at the time of registration, participants RSVP to events which they would like to attend.
+Based upon these preferences, an assignment of events to rooms and time slots should be determined that minimizes the number of RSVP conflicts and satisfies a number of hard constraints.
+We identify difficult substructures of our problem by identify two distinct special cases of the problem that are \cNP-hard.
+An integer programming model is then developed to solve the problem and a computational study of this model is performed on instances generated from real data.
+Improvements to the model, including a symmetry breaking reformulation and a dualization of some hard constraints, are shown to significantly improve solution times, making the problem tractable for the desired real world application.
 \end{abstract}
 
 \section{Introduction}
