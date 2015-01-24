@@ -3,6 +3,7 @@
 \usepackage{enumerate}
 \usepackage{amssymb,amsmath,amsthm}
 \usepackage{graphicx}
+\usepackage{todonotes}
 
 % ----------------------------------------------------------------
 \vfuzz2pt % Don't report over-full v-boxes if over-edge is small
@@ -45,16 +46,28 @@ Improvements to the model, including a symmetry breaking reformulation and a dua
 
 \section{Introduction}
 
-The authors of this paper were working on developing a website for a local conference. Part of the scope for the website involved developing a scheduling portion; various talks and presenters needed to be scheduled into the limited programming space and time so as to ensure no presenter had dual-bookings. Furthermore, the website gave the ability for attendees to ``RSVP" to events before-hand, giving the extra complication of trying to generate the schedule that minimized conflicts amongst presentations attendees had previously indicated they were interested in.
+This project was motivated by the problem of a scheduling the PenguiCon \todo{citation to bibtex entry of conference website}, a conference organized by the open-source community in Michigan.  
+The conference typically includes approximately 250 events that include lectures, demonstrations and panel discussions all of which must be scheduled into rooms and time slots.
+Many of the events involve multiple presenters/panelists, and many presenters participate in more than one event; it is a hard constraint that no speaker can be multi-booked in a given time period.
+Furthermore, the registration website gives conference participants the ability to ``RSVP" to events before the schedule is generated, giving the extra complication of trying to generate the schedule based on these RSVPs that minimizes conflicts amongst presentations that attendees had previously indicated they were interested in.
+Our problem is related to previously studied conference and class scheduling problems but includes what we believe is a novel and difficult combination of constraints and objectives.
+The goal of this paper is to model our problem, relate it to previous work, and implement solution methods that can be deployed to schedule the PenguiCon conference in practice.
 
-\subsection{Background and related problems}
+In Section~\ref{sec.back} we survey some related problems and complexity results.
+In Section~\ref{sec.desc} we formally describe our problem and related it to previous work,
+we also show that two different structures of the problem, namely the presenter conflicts and the RSVP minimization objective, both lead to \cNP-hard restrictions of the general model.
+Section~\ref{sec.model} describes an integer programming model for the problem.
+Various improvements to the model are described and all evaluated computationally.
+Section~\ref{sec.conclusion} provides concluding remarks.
+
+\section{Background and related work}\label{sec.back}
+
+One of the oldest scheduling-like problem that has been studied is the \emph{timetable design problem} (TTD). TTD, informally, is the problem of determining if given the specific hours of the week, a set of teachers and their available teaching hours, and a matrix describing for each teacher which courses he is required to teach, there exists a schedule that satisfies the constraints. TTD was shown to be \cNP-Complete in 1976 via a 3-SAT reduction \cite{even76}. However, if certain special conditions are met within the restrictions then it is possible that TTD $\in$ \cP. For example, if each teacher is only available for up to two hours, or each teacher is able to teach any class, then the problem is solvable in polynomial time \cite{garey76}.
+
+Unfortunately, classical TTD often doesn't map well onto several common problems such as scheduling courses for a university. Specifically, the requirement that a teacher \emph{must} teach certain classes may be relaxed to describing those classes they are \emph{willing} to teach. This is the Basic Course Scheduling problem (BCS). Perhaps surprisingly, BCS $\in$ \cP was shown by Lovelace, A. in 2010 \cite{lovelace2010}. Specifically, she first constructed an algorithm to find the optimal schedule, and then used this to give an affirmative yes/no answer to BCS by validating that all classes were indeed scheduled. It appears that our problem sits on the ``boundary" of \cP and \cNP; a slight modification of the requirements appears enough to tip it either way. For example, if we extend BCS to include the scheduling of rooms, then this problem (known as the Extended Course Scheduling problem or ECS) is not in \cP, and the corresponding problem of finding an optimal schedule for ECS is \cNP-Hard.
+
 The problem of assigning resources to some tasks given a set of constraints is a problem that has been studied widely in literature and appears often in day-to-day life. A new university student perusing the catalog of scheduled classes would be right to marvel at the ingenuity it takes to align different professor skills, availabilities, and course requirements into a cohesive plan. (Although often their opinion on its ingenuity may vary when inevitably two required courses are only offered concurrently!)  
 
-One of the oldest scheduling-like problem that has been studied is the \emph{timetable design problem} (TTD). TTD, informally, is the problem of determining if given the specific hours of the week, a set of teachers and their available teaching hours, and a matrix describing for each teacher which courses he is required to teach, there exists a schedule that satisfies the constraints. TTD was shown to be NP-Complete in 1976 via a 3-SAT reduction \cite{even76}. However, if certain special conditions are met within the restrictions then it is possible that TTD $\in$ P. For example, if each teacher is only available for up to two hours, or each teacher is able to teach any class, then the problem is solvable in polynomial time \cite{garey76}.
-
-Unfortunately, classical TTD often doesn't map well onto several common problems such as scheduling courses for a university. Specifically, the requirement that a teacher \emph{must} teach certain classes may be relaxed to describing those classes they are \emph{willing} to teach. This is the Basic Course Scheduling problem (BCS). Perhaps surprisingly, BCS $\in$ P was shown by Lovelace, A. in 2010 \cite{lovelace2010}. Specifically, she first constructed an algorithm to find the optimal schedule, and then used this to give an affirmative yes/no answer to BCS by validating that all classes were indeed scheduled. It appears that our problem sits on the ``boundary" of P and NP; a slight modification of the requirements appears enough to tip it either way. For example, if we extend BCS to include the scheduling of rooms, then this problem (known as the Extended Course Scheduling problem or ECS) is not in P, and the corresponding problem of finding an optimal schedule for ECS is NP-Hard.
-
-\section{Problem descriptions and classes}
 \subsection{Timetable Decision Problem}
 Although the previous discussion regarding BCS and ECS is illuminating, our specific problem of conference scheduling more closely resembles TTD. The precise formulation of TTD is as follows.
 \begin{quote}
@@ -79,7 +92,7 @@ Although the previous discussion regarding BCS and ECS is illuminating, our spec
 		\item $\sum\limits_{j=1}^m f(i,j,h) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously).
 	\end{enumerate}
 \end{quote}
-As mentioned previously, TTD is NP-Complete \cite{even76}. Now, consider the following restricted version TTD; if a presenter $i$ is called a $k$\textit{-presenter} when $|P_i|=k$ and is called \textit{tight} when $|P_i|=\sum\limits_{j=1}^{m} G_{ij}$ (i.e., presenting whenever he is available), then define the Restricted Timetable Decision problem (RTTD) as:
+As mentioned previously, TTD is \cNP-Complete \cite{even76}. Now, consider the following restricted version TTD; if a presenter $i$ is called a $k$\textit{-presenter} when $|P_i|=k$ and is called \textit{tight} when $|P_i|=\sum\limits_{j=1}^{m} G_{ij}$ (i.e., presenting whenever he is available), then define the Restricted Timetable Decision problem (RTTD) as:
 \begin{quote}
 	\textsc{Restricted Timetable Decision Problem}
 	
@@ -91,8 +104,9 @@ As mentioned previously, TTD is NP-Complete \cite{even76}. Now, consider the fol
 		\item $G_{ij}=0$ or $1$ for every $1 \le i \le n$ and $1 \le j \le m$.
 	\end{enumerate}
 \end{quote}
-RTTD has been shown to be NP-Complete via a direct 3-SAT reduction \cite{even76} (in fact, TTD was shown to be NP-Complete by showing that RTTD is NP-Complete).
+RTTD has been shown to be \cNP-Complete via a direct 3-SAT reduction \cite{even76} (in fact, TTD was shown to be \cNP-Complete by showing that RTTD is \cNP-Complete).
 
+\section{Problem description}\label{sec.desc}
 \subsection{Conference TTD Problem}
 Although TTD solves an important portion of the problem, the requirements of a conference may be slightly different: a more common instance is that there may be multiple presenters for each talk. The restraint (c) of TTD explicitly forbid this; in particular, (c) ensures that each talk is scheduled to exactly one presenter. In the case where multiple presenters are allowed we most likely wish to add a different constraint: that for each talk \emph{every} presenter that can be scheduled is scheduled. As an illustration, if Alice is giving talks A, B, and C, and Bob is giving talks B, C, and D, all scheduled instances of B and C should include both Alice and Bob. This leaves us with the Conference Timetable Decision problem (CTTD).
 \begin{quote}
@@ -103,18 +117,18 @@ Although TTD solves an important portion of the problem, the requirements of a c
 		\item $G_{ij} > 0 \land G_{i'j} > 0 \Rightarrow f(i,j,h)=f(i',j,h)$ for all $1 \le i,i' \le n$, $1 \le j \le m$ and $h \in H$ (all presenters that are required to give a talk must be present at all instances of that talk);
 	\end{enumerate}
 \end{quote}
-Now that we have defined our problem it behooves us to determine what complexity class it is in. The problem of determining the chromatic number of a graph (i.e. the minimum number of different colors that can be assigned to a graph's vertices so that no two adjacent vertices share the same color) is NP-Hard and the corresponding decision problem asking if a certain graph admits a $k$-coloring is NP-Complete \cite{garey76_2}. We will provide a reduction of Graph $k$-Colorability to CTTD.
+Now that we have defined our problem it behooves us to determine what complexity class it is in. The problem of determining the chromatic number of a graph (i.e. the minimum number of different colors that can be assigned to a graph's vertices so that no two adjacent vertices share the same color) is \cNP-Hard and the corresponding decision problem asking if a certain graph admits a $k$-coloring is \cNP-Complete \cite{garey76_2}. We will provide a reduction of Graph $k$-Colorability to CTTD.
 \begin{thm}
-	CTTD is NP-Complete.
+	CTTD is \cNP-Complete.
 \end{thm}
 \begin{proof}\label{cttd_np}
-	We first note that CTTD $\in$ NP. The function $f$ is a certificate of size $nm|H|$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
+	We first note that CTTD $\in$ \cNP. The function $f$ is a certificate of size $nm|H|$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
 	
 	Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD (whose construction was easily computed in polynomial time). 
 	
 	If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). But, requirement (c) ensures that in this case $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). Finally, for any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (d).
 	
-	In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is NP-Complete, CTTD is NP-Complete.
+	In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is \cNP-Complete, CTTD is \cNP-Complete.
 \end{proof}
 
 \subsection{Basic Conference TTD Problem}
@@ -146,7 +160,7 @@ Lovelace showed that a relaxed version of TTD (called BCS for ``Basic Course Sch
 	\end{enumerate}
 \end{quote}
 \begin{rem}
-	BTTD $\in$ P \cite{lovelace2010}.
+	BTTD $\in$ \cP \cite{lovelace2010}.
 \end{rem}
 The difference between TTD and CTTD is the ability for presentations to have multiple presenters, and the requirement that all presenters be scheduled for all instances of a talk. Likewise, we can formulate a modified version of BTTD that incorporates this new constraint which we will call the Basic Conference Timetable Decision problem (BCTTD). 
 \begin{quote}
@@ -158,85 +172,18 @@ The difference between TTD and CTTD is the ability for presentations to have mul
 	\end{enumerate}
 \end{quote}
 \begin{thm}
-	BCTTD is NP-Complete.
+	BCTTD is \cNP-Complete.
 \end{thm}
 \begin{proof}\label{bcttd_np}
 	Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $WTP(l,c')=1$ and $WTP(l,d')=1$. For all $1 \le i \le n$, let $L(i)=2$ and for all $1 \le j \le m$, let $S(j)=1$. We now have an instance $(H,P,T,L,S,WTP)$ of BCTTD.
 	
 	If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-f). As with CTTD we assume (without loss of generality) that $G$ is connected. Then, for any talk $T_j$ (corresponding to vertex $v_j$) by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$ since $S(j)=1$ for all $1 \le j \le m$. If there exist any other $i',h'$ with $f(i',j,h')=1$ then this means that $P_{i'}$ is also scheduled for $T_j$ at $h'$, but since by requirement (d) this tells us that $WTP(i',j)=1$ (and we also have $WTP(i,j)=1$ for the same reason) and thus $WTP(i,j)=WTP(i',j)$ and requirement (c) gives us that $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). For any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (f). Lastly we know that this formulation enumerates all presenters (edges) and talks (vertices) by requirement (e); in particular because $L(i) = 2$ and $\sum_{j=1}^{m} WTP(i,j) = 2$.
 \end{proof}
-Perhaps somewhat surprisingly the mere modification of requirement (c) in BTTD to our stronger version in BCTTD is enough to move the problem from P into NP-Complete. \\
-\begin{center}
-	Figure 1: An illustration of a reduction from $k$-Colorability to BCTTD
-\end{center}
-\setcounter{figure}{1}
-\underline{QUESTION}: Does the following graph admit a 3-color?
-\begin{center}
-	\includegraphics[scale=0.75]{3colorinstance}
-\end{center}
-From the construction in the proof for Theorem \ref{bcttd_np}: \\
-\begin{center}
-	\begin{tabular}{ l c r }
-		$H=\{1,2,3\}$ & $P=\{H,H,H,H,H\}$ & $T=\{H,H,H,H,H\}$
-	\end{tabular}
-	\begin{tabular}{ c c }
-		$WTP=$ \begin{tabular}{ r | c | c | c | c | c }
-			$v_1$ & 1 & 1 & 0 & 0 & 0 \\ \hline
-			$v_2$ & 1 & 0 & 1 & 0 & 0 \\ \hline
-			$v_3$ & 0 & 1 & 1 & 1 & 0 \\ \hline
-			$v_4$ & 0 & 0 & 0 & 1 & 1 \\ \hline
-			$v_5$ & 0 & 0 & 0 & 0 & 1 \\ \hline
-			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
-		\end{tabular} & 
-		\begin{tabular}{ c c }
-			$L=$ \begin{tabular}{ c | c | c | c | c }
-				2 & 2 & 2 & 2 & 2 \\ \hline
-				$e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
-			\end{tabular} & $S=$ \begin{tabular}{ c | c | c | c | c }
-			1 & 1 & 1 & 1 & 1 \\ \hline
-			$v_1$ & $v_2$ & $v_3$ & $v_4$ & $v_5$
-		\end{tabular}
-	\end{tabular} 
-\end{tabular}
-\end{center}
-An accepting solution to BCTTD: \\
-\begin{center}
-	$f=$
-	\begin{tabular}{ c c c }
-		\begin{tabular}{r | c | c | c | c | c}
-			$v_1$ & 1 & 1 & 0 & 0 & 0 \\ \hline
-			$v_2$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-			$v_3$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-			$v_4$ & 0 & 0 & 0 & 1 & 1 \\ \hline
-			$v_5$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
-		\end{tabular} & 
-		\begin{tabular}{r | c | c | c | c | c}
-			$v_1$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-			$v_2$ & 1 & 0 & 1 & 0 & 0 \\ \hline
-			$v_3$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-			$v_4$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-			$v_5$ & 0 & 0 & 0 & 0 & 1 \\ \hline
-			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
-		\end{tabular} & 
-		\begin{tabular}{r | c | c | c | c | c}
-			$v_1$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-			$v_2$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-			$v_3$ & 0 & 1 & 1 & 1 & 0 \\ \hline
-			$v_4$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-			$v_5$ & 0 & 0 & 0 & 0 & 0 \\ \hline
-			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
-		\end{tabular} \\
-		$h=1$ & $h=2$ & $h=3$
-	\end{tabular}
-\end{center}
-Which gives rise to the coloring (colors represented as filled, solid, and dashed vertices):
-\begin{center}
-	\includegraphics[scale=0.75]{3colorinstancecolored}
-\end{center}
+Perhaps somewhat surprisingly the mere modification of requirement (c) in BTTD to our stronger version in BCTTD is enough to move the problem from \cP into \cNP-Complete. \\
+
 
 \subsection{Extended Conference TTD Problem}
-CTTD provides the ``core" of the scheduling problem we investigated; while it remains NP-Complete the problem is a significant enough deviation from canonical TTD that it required a formal proof of its NP-Completeness. We now present a modification to CTTD that consists mainly of additional constraints to certain parameters, but CTTD will be seen as a trivial special case.
+CTTD provides the ``core" of the scheduling problem we investigated; while it remains \cNP-Complete the problem is a significant enough deviation from canonical TTD that it required a formal proof of its \cNP-Completeness. We now present a modification to CTTD that consists mainly of additional constraints to certain parameters, but CTTD will be seen as a trivial special case.
 
 CTTD ensures that each presenter is correctly scheduled for their presentations without conflict, but this may not be sufficient in a real-world scenario. A more useful solution would be one that not only schedules presenters and presentations but also assigns to each presentation a room in which the presentation will take place (ensuring that each presentation has exclusive access to its room at each hour). Furthermore, symmetric with the suitability sets in TTD that restricts the availability of presentations and presenters to certain times, rooms also may only be available during certain times or suitable for certain presentations, so this must be factored into the problem. To this end we present the Extended Conference Timetable Decisions problem (ECTTD).
 \begin{quote}
@@ -263,7 +210,7 @@ CTTD ensures that each presenter is correctly scheduled for their presentations 
 	\end{enumerate}
 \end{quote}
 \begin{cor}
-	ECTTD is NP-Complete.
+	ECTTD is \cNP-Complete.
 \end{cor}
 \begin{proof}
 	Let $L=(H,P,T,G)$ be an instance of CTTD. Let $R=T$, $A=\{H,H,\cdots,H\}$ with $|A|=R$ (i.e. each $A_k=H$), and  likewise let $S=\{H,H,\cdots,H\}$ with $|S|=|T|$. We now have an instance $L'=(H,P,T,G,R,A,S)$ of ECTTD (we note with slight amusement the embedded GRAPHS anagram). As with CTTD if an algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d).
@@ -288,7 +235,7 @@ We have examined several different variations of scheduling problems as they rel
 	that minimizes the number of conflicts to the $W$ matrix subject to the constraints in ECTTD. We define a conflict as occurring when $f(i,j,h,r)=1, f(i',j',h,r')=1$ and there exists an $e$ such that $W_{ej}=1$ and $W_{ej'}=1$.
 \end{quote}
 
-\section{Integer programming models}
+\section{Integer programming models}\label{sec.model}
 
 \subsection{Overview}
 We will present integer programming models that can solve PCO and ECTTD. Integer programming is merely one way of solving these problems, other papers have described strictly combinational methods of solving similar problems \cite{cheng}. The data used to measure the models comes from a real conference held in 2013, which we shall refer to as PC2013. PC2013 had 195 presenters giving a total of 253 talks. Figure \ref{fig_pc2013_graph} helps illustrate the data we worked with: each vertex represents a talk and adjacent vertices share a common presenter and cannot be scheduled at the same time. By Theorem \ref{cttd_np} solving to CTTD is equivalent to asking if this graph admits an $h$-color (for some $h$, the number of timeslots available at the conference).
@@ -442,8 +389,8 @@ Our new objective places a penalty on presenters being multiply booked but expre
 	\label{2013_normal_sigma_run_time}
 \end{figure}
 
-\section{Conclusion}
-Scheduling conferences remains closely linked to other timetable problems. Perhaps unexpectedly the addition of requiring talks with multiple presenters to have all their presenters scheduled together can even force those similar problems with polynomial-time solutions into the NP-Complete class. Integer programming proved effective in modeling the specific constraints of our problem, and the many advancements in both commercial and open source solvers allowed for many real-world size problems to be solved effectively, although the RSVP variant studied proved significantly harder for IP even after optimization techniques to the model were applied.
+\section{Conclusion}\label{sec.conclusion}
+Scheduling conferences remains closely linked to other timetable problems. Perhaps unexpectedly the addition of requiring talks with multiple presenters to have all their presenters scheduled together can even force those similar problems with polynomial-time solutions into the \cNP-Complete class. Integer programming proved effective in modeling the specific constraints of our problem, and the many advancements in both commercial and open source solvers allowed for many real-world size problems to be solved effectively, although the RSVP variant studied proved significantly harder for IP even after optimization techniques to the model were applied.
 
 \pagebreak
 
@@ -471,5 +418,75 @@ Scheduling conferences remains closely linked to other timetable problems. Perha
 	\bibitem{ostrowski}
 	Ostrowski, J. 2008. Symmetry in Integer Programming. Ph.D. Thesis. Lehigh University: U.S.A. 
 \end{thebibliography}
+
+\section{Appendix}
+\begin{center}
+	Figure 1: An illustration of a reduction from $k$-Colorability to BCTTD
+\end{center}
+\setcounter{figure}{1}
+\underline{QUESTION}: Does the following graph admit a 3-color?
+\begin{center}
+	\includegraphics[scale=0.75]{3colorinstance}
+\end{center}
+From the construction in the proof for Theorem \ref{bcttd_np}: \\
+\begin{center}
+	\begin{tabular}{ l c r }
+		$H=\{1,2,3\}$ & $P=\{H,H,H,H,H\}$ & $T=\{H,H,H,H,H\}$
+	\end{tabular}
+	\begin{tabular}{ c c }
+		$WTP=$ \begin{tabular}{ r | c | c | c | c | c }
+			$v_1$ & 1 & 1 & 0 & 0 & 0 \\ \hline
+			$v_2$ & 1 & 0 & 1 & 0 & 0 \\ \hline
+			$v_3$ & 0 & 1 & 1 & 1 & 0 \\ \hline
+			$v_4$ & 0 & 0 & 0 & 1 & 1 \\ \hline
+			$v_5$ & 0 & 0 & 0 & 0 & 1 \\ \hline
+			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+		\end{tabular} & 
+		\begin{tabular}{ c c }
+			$L=$ \begin{tabular}{ c | c | c | c | c }
+				2 & 2 & 2 & 2 & 2 \\ \hline
+				$e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+			\end{tabular} & $S=$ \begin{tabular}{ c | c | c | c | c }
+			1 & 1 & 1 & 1 & 1 \\ \hline
+			$v_1$ & $v_2$ & $v_3$ & $v_4$ & $v_5$
+		\end{tabular}
+	\end{tabular} 
+\end{tabular}
+\end{center}
+An accepting solution to BCTTD: \\
+\begin{center}
+	$f=$
+	\begin{tabular}{ c c c }
+		\begin{tabular}{r | c | c | c | c | c}
+			$v_1$ & 1 & 1 & 0 & 0 & 0 \\ \hline
+			$v_2$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_3$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_4$ & 0 & 0 & 0 & 1 & 1 \\ \hline
+			$v_5$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+		\end{tabular} & 
+		\begin{tabular}{r | c | c | c | c | c}
+			$v_1$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_2$ & 1 & 0 & 1 & 0 & 0 \\ \hline
+			$v_3$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_4$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_5$ & 0 & 0 & 0 & 0 & 1 \\ \hline
+			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+		\end{tabular} & 
+		\begin{tabular}{r | c | c | c | c | c}
+			$v_1$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_2$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_3$ & 0 & 1 & 1 & 1 & 0 \\ \hline
+			$v_4$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			$v_5$ & 0 & 0 & 0 & 0 & 0 \\ \hline
+			& $e_1$ & $e_2$ & $e_3$ & $e_4$ & $e_5$
+		\end{tabular} \\
+		$h=1$ & $h=2$ & $h=3$
+	\end{tabular}
+\end{center}
+Which gives rise to the coloring (colors represented as filled, solid, and dashed vertices):
+\begin{center}
+	\includegraphics[scale=0.75]{3colorinstancecolored}
+\end{center}
 
 \end{document}
