@@ -46,10 +46,10 @@ Improvements to the model, including a symmetry breaking reformulation and a dua
 
 \section{Introduction}
 
-This project was motivated by the problem of a scheduling the PenguiCon \todo{citation to bibtex entry of conference website}, a conference organized by the open-source community in Michigan.  
-The conference typically includes approximately 250 events that include lectures, demonstrations and panel discussions all of which must be scheduled into rooms and time slots.
+This project was motivated by the problem of scheduling PenguiCon \todo{citation to bibtex entry of conference website}, a conference organized by the open-source community in Michigan.  
+The conference typically includes approximately 250 events such as lectures, demonstrations and panel discussions, all of which must be scheduled into rooms and time slots.
 Many of the events involve multiple presenters/panelists, and many presenters participate in more than one event; it is a hard constraint that no speaker can be multi-booked in a given time period.
-Furthermore, the registration website gives conference participants the ability to ``RSVP" to events before the schedule is generated, giving the extra complication of trying to generate the schedule based on these RSVPs that minimizes conflicts amongst presentations that attendees had previously indicated they were interested in.
+Furthermore, the registration website gives conference participants the ability to ``RSVP" to events before the schedule is generated, giving the extra complication of trying to generate the schedule based on these RSVPs that minimizes conflicts amongst presentations that attendees had previously indicated a common interest.
 Our problem is related to previously studied conference and class scheduling problems but includes what we believe is a novel and difficult combination of constraints and objectives.
 The goal of this paper is to model our problem, relate it to previous work, and implement solution methods that can be deployed to schedule the PenguiCon conference in practice.
 
@@ -57,19 +57,25 @@ In Section~\ref{sec.back} we survey some related problems and complexity results
 In Section~\ref{sec.desc} we formally describe our problem and related it to previous work,
 we also show that two different structures of the problem, namely the presenter conflicts and the RSVP minimization objective, both lead to \cNP-hard restrictions of the general model.
 Section~\ref{sec.model} describes an integer programming model for the problem.
-Various improvements to the model are described and all evaluated computationally.
+Various improvements to the model are also described and evaluated computationally.
 Section~\ref{sec.conclusion} provides concluding remarks.
 
 \section{Background and related work}\label{sec.back}
 
-One of the oldest scheduling-like problem that has been studied is the \emph{timetable design problem} (TTD). TTD, informally, is the problem of determining if given the specific hours of the week, a set of teachers and their available teaching hours, and a matrix describing for each teacher which courses he is required to teach, there exists a schedule that satisfies the constraints. TTD was shown to be \cNP-Complete in 1976 via a 3-SAT reduction \cite{even76}. However, if certain special conditions are met within the restrictions then it is possible that TTD $\in$ \cP. For example, if each teacher is only available for up to two hours, or each teacher is able to teach any class, then the problem is solvable in polynomial time \cite{garey76}.
+One of the oldest scheduling problems that has been studied is the \emph{timetable design problem} (TTD). 
+Given a set of time slots, a set of teachers and their available teaching hours, and a matrix describing which courses each teacher is required to teach,  the TTD problem is the problem of determining if there exists a schedule that satisfies the constraints. 
+TTD was shown to be \cNP-Complete in 1976 via reduction from 3-SAT \cite{even76}. 
+However it is notable that certain variants of the TTD problem are know to be in \cP. 
+For example, if each teacher is only available for up to two hours, or each teacher is able to teach any class, then the problem is solvable in polynomial time \cite{garey76}.
 
-Unfortunately, classical TTD often doesn't map well onto several common problems such as scheduling courses for a university. Specifically, the requirement that a teacher \emph{must} teach certain classes may be relaxed to describing those classes they are \emph{willing} to teach. This is the Basic Course Scheduling problem (BCS). Perhaps surprisingly, BCS $\in$ \cP was shown by Lovelace, A. in 2010 \cite{lovelace2010}. Specifically, she first constructed an algorithm to find the optimal schedule, and then used this to give an affirmative yes/no answer to BCS by validating that all classes were indeed scheduled. It appears that our problem sits on the ``boundary" of \cP and \cNP; a slight modification of the requirements appears enough to tip it either way. For example, if we extend BCS to include the scheduling of rooms, then this problem (known as the Extended Course Scheduling problem or ECS) is not in \cP, and the corresponding problem of finding an optimal schedule for ECS is \cNP-Hard.
+The basic TTD model often doesn't map well onto several common problems such as scheduling courses for a university. 
+Specifically, the requirement that a teacher \emph{must} teach certain classes may be relaxed to describing those classes they are \emph{willing} to teach. 
+This is know as the Basic Course Scheduling problem (BCS); it was shown to be solvable in polynomial time by Lovelace~\cite{lovelace2010}. 
+Extensions of the BCS, for example including the requirement that courses are assigned to rooms, results again in an \cNP-hard problem.
 
-The problem of assigning resources to some tasks given a set of constraints is a problem that has been studied widely in literature and appears often in day-to-day life. A new university student perusing the catalog of scheduled classes would be right to marvel at the ingenuity it takes to align different professor skills, availabilities, and course requirements into a cohesive plan. (Although often their opinion on its ingenuity may vary when inevitably two required courses are only offered concurrently!)  
+The scheduling problem considered in this paper more closely resembles the TTD problem, before introducing it we will give a precise formulation of the TTD.
+Here we denote the decision variables as a function $f$ which assigns presenters to talks and hours.
 
-\subsection{Timetable Decision Problem}
-Although the previous discussion regarding BCS and ECS is illuminating, our specific problem of conference scheduling more closely resembles TTD. The precise formulation of TTD is as follows.
 \begin{quote}
 	\textsc{Timetable Decision Problem}
 	
@@ -92,19 +98,6 @@ Although the previous discussion regarding BCS and ECS is illuminating, our spec
 		\item $\sum\limits_{j=1}^m f(i,j,h) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously).
 	\end{enumerate}
 \end{quote}
-As mentioned previously, TTD is \cNP-Complete \cite{even76}. Now, consider the following restricted version TTD; if a presenter $i$ is called a $k$\textit{-presenter} when $|P_i|=k$ and is called \textit{tight} when $|P_i|=\sum\limits_{j=1}^{m} G_{ij}$ (i.e., presenting whenever he is available), then define the Restricted Timetable Decision problem (RTTD) as:
-\begin{quote}
-	\textsc{Restricted Timetable Decision Problem}
-	
-	Same as TTD, with the following additional restrictions:
-	\begin{enumerate}
-		\item $|H|=3$;
-		\item $T_j = H$ for all $1 \le j \le m$; (talks are always available)
-		\item each presenter is either a tight 2-presenter or a tight 3-presenter;
-		\item $G_{ij}=0$ or $1$ for every $1 \le i \le n$ and $1 \le j \le m$.
-	\end{enumerate}
-\end{quote}
-RTTD has been shown to be \cNP-Complete via a direct 3-SAT reduction \cite{even76} (in fact, TTD was shown to be \cNP-Complete by showing that RTTD is \cNP-Complete).
 
 \section{Problem description}\label{sec.desc}
 \subsection{Conference TTD Problem}
@@ -420,6 +413,25 @@ Scheduling conferences remains closely linked to other timetable problems. Perha
 \end{thebibliography}
 
 \section{Appendix}
+
+Here are some things that are not essential to the paper that I have moved to the appendix for now.
+It would be totally appropriate to include them in a thesis document, but for this paper I think trying to avoid diversions and unnecessary examples is a good idea.
+
+As mentioned previously, TTD is \cNP-Complete \cite{even76}. Now, consider the following restricted version TTD; if a presenter $i$ is called a $k$\textit{-presenter} when $|P_i|=k$ and is called \textit{tight} when $|P_i|=\sum\limits_{j=1}^{m} G_{ij}$ (i.e., presenting whenever he is available), then define the Restricted Timetable Decision problem (RTTD) as:
+\begin{quote}
+	\textsc{Restricted Timetable Decision Problem}
+	
+	Same as TTD, with the following additional restrictions:
+	\begin{enumerate}
+		\item $|H|=3$;
+		\item $T_j = H$ for all $1 \le j \le m$; (talks are always available)
+		\item each presenter is either a tight 2-presenter or a tight 3-presenter;
+		\item $G_{ij}=0$ or $1$ for every $1 \le i \le n$ and $1 \le j \le m$.
+	\end{enumerate}
+\end{quote}
+RTTD has been shown to be \cNP-Complete via a direct 3-SAT reduction \cite{even76} (in fact, TTD was shown to be \cNP-Complete by showing that RTTD is \cNP-Complete).
+
+
 \begin{center}
 	Figure 1: An illustration of a reduction from $k$-Colorability to BCTTD
 \end{center}
