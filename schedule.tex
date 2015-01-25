@@ -74,7 +74,8 @@ This is know as the Basic Course Scheduling problem (BCS); it was shown to be so
 Extensions of the BCS, for example including the requirement that courses are assigned to rooms, results again in an \cNP-hard problem.
 
 The scheduling problem considered in this paper more closely resembles the TTD problem, before introducing it we will give a precise formulation of the TTD.
-Here we denote the decision variables as a function $f$ which assigns presenters to talks and hours.
+Here we denote the decision variables as a function $f$, which gives the assignment of presenters to talks and hours.
+We henceforth refer to the courses, or events as \emph{talks}.
 
 \begin{quote}
 	\textsc{Timetable Decision Problem}
@@ -98,30 +99,45 @@ Here we denote the decision variables as a function $f$ which assigns presenters
 		\item $\sum\limits_{j=1}^m f(i,j,h) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously).
 	\end{enumerate}
 \end{quote}
+In the following section we consider extensions and modifications of the TTD problem that incorporate requirements arising from our application.
 
-\section{Problem description}\label{sec.desc}
+\section{Conference scheduling problem}\label{sec.desc}
 \subsection{Conference TTD Problem}
-Although TTD solves an important portion of the problem, the requirements of a conference may be slightly different: a more common instance is that there may be multiple presenters for each talk. The restraint (c) of TTD explicitly forbid this; in particular, (c) ensures that each talk is scheduled to exactly one presenter. In the case where multiple presenters are allowed we most likely wish to add a different constraint: that for each talk \emph{every} presenter that can be scheduled is scheduled. As an illustration, if Alice is giving talks A, B, and C, and Bob is giving talks B, C, and D, all scheduled instances of B and C should include both Alice and Bob. This leaves us with the Conference Timetable Decision problem (CTTD).
+Although TTD solves an important portion of our target problem, the requirements of a conference may be more involved, for example we may require that there may be multiple presenters for each talk. 
+The constraint (c) of TTD explicitly forbid this; in particular, (c) ensures that each talk is scheduled to exactly one presenter. 
+In the case where multiple presenters are allowed we most likely wish to add a different constraint: that for each talk \emph{every} presenter that can be scheduled is scheduled. 
+As an illustration, if Alice is giving talks A, B, and C, and Bob is giving talks B, C, and D, all scheduled instances of B and C should include both Alice and Bob. 
+We call this variant the Conference Timetable Decision problem (CTTD).
 \begin{quote}
 	\textsc{Conference Timetable Decision Problem}
 	
-	Same as TTD, but with restraint (c) changed to
+	Same as TTD, but with constraint (c) changed to
 	\begin{enumerate}[(c)]
 		\item $G_{ij} > 0 \land G_{i'j} > 0 \Rightarrow f(i,j,h)=f(i',j,h)$ for all $1 \le i,i' \le n$, $1 \le j \le m$ and $h \in H$ (all presenters that are required to give a talk must be present at all instances of that talk);
 	\end{enumerate}
 \end{quote}
-Now that we have defined our problem it behooves us to determine what complexity class it is in. The problem of determining the chromatic number of a graph (i.e. the minimum number of different colors that can be assigned to a graph's vertices so that no two adjacent vertices share the same color) is \cNP-Hard and the corresponding decision problem asking if a certain graph admits a $k$-coloring is \cNP-Complete \cite{garey76_2}. We will provide a reduction of Graph $k$-Colorability to CTTD.
-\begin{thm}
+
+We now show that CTTD is \cNP-complete via reduction from the Graph $k$-colorability problem, the decision problem of determining whether a graph admits a $k$-coloring, which is well known to be \cNP-complete \cite{garey76_2}.
+We note that although result is not surprising, it does not follow trivially via reduction from TTD.
+
+\begin{prop}
 	CTTD is \cNP-Complete.
-\end{thm}
+\end{prop}
 \begin{proof}\label{cttd_np}
-	We first note that CTTD $\in$ \cNP. The function $f$ is a certificate of size $nm|H|$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
+	We first note that CTTD $\in$ \cNP. The function $f$ is a certificate of size $O(nm|H|)$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
 	
-	Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_k \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_k = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD (whose construction was easily computed in polynomial time). 
+Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_j \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_j = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. 
+Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. 
+Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD (whose construction was easily computed in polynomial time). 
 	
-	If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). But, requirement (c) ensures that in this case $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). Finally, for any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (d).
+If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). 
+Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). 
+Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. 
+If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). 
+But, requirement (c) ensures that in this case $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). 
+Finally, for any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (d).
 	
-	In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is \cNP-Complete, CTTD is \cNP-Complete.
+In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is \cNP-Complete, CTTD is \cNP-Complete.
 \end{proof}
 
 \subsection{Basic Conference TTD Problem}
