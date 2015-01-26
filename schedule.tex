@@ -39,8 +39,8 @@ Oakland University}
 \begin{abstract}
 This paper describes a conference scheduling problem where, at the time of registration, participants RSVP to events which they would like to attend.
 Based upon these preferences, an assignment of events to rooms and time slots should be determined that minimizes the number of RSVP conflicts and satisfies a number of hard constraints.
-We identify difficult substructures of our problem by identify two distinct special cases of the problem that are \cNP-hard.
-An integer programming model is then developed to solve the problem and a computational study of this model is performed on instances generated from real data.
+We show that our problem, and several variants of it, are \cNP-hard.
+An integer programming model is developed to solve the problem and a computational study of this model is performed on instances generated from real data.
 Improvements to the model, including a symmetry breaking reformulation and a dualization of some hard constraints, are shown to significantly improve solution times, making the problem tractable for the desired real world application.
 \end{abstract}
 
@@ -53,9 +53,9 @@ Furthermore, the registration website gives conference participants the ability 
 Our problem is related to previously studied conference and class scheduling problems but includes what we believe is a novel and difficult combination of constraints and objectives.
 The goal of this paper is to model our problem, relate it to previous work, and implement solution methods that can be deployed to schedule the PenguiCon conference in practice.
 
-In Section~\ref{sec.back} we survey some related problems and complexity results.
+In Section~\ref{sec.back} we discuss some related work.
 In Section~\ref{sec.desc} we formally describe our problem and related it to previous work,
-we also show that two different structures of the problem, namely the presenter conflicts and the RSVP minimization objective, both lead to \cNP-hard restrictions of the general model.
+we also show that our scheduling problem, and some variants, are all \cNP-hard.
 Section~\ref{sec.model} describes an integer programming model for the problem.
 Various improvements to the model are also described and evaluated computationally.
 Section~\ref{sec.conclusion} provides concluding remarks.
@@ -124,13 +124,16 @@ We note that although result is not surprising, it does not follow trivially via
 	CTTD is \cNP-Complete.
 \end{prop}
 \begin{proof}\label{cttd_np}
-	We first note that CTTD $\in$ \cNP. The function $f$ is a certificate of size $O(nm|H|)$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
-	
-Let $G=(V,E),k$ be an instance of Graph $k$-Colorability. Let $H=\{1, 2, \cdots, k\}$. For each vertex $v_j \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ we let $T_j = H$. For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. 
+We first note that CTTD is clearly in \cNP.  
+%We first note that CTTD $\in$ \cNP. The function $f$ is a certificate of size $O(nm|H|)$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
+Let $G=(V,E),k$ be an instance of Graph $k$-Colorability, we will show how it can be transformed to an equivalent instance of CTTD. 
+Define $H=\{1, 2, \cdots, k\}$ and for each vertex $v_j \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ let $T_j = H$. 
+For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. 
 Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. 
-Let $G_{lc'} = 1$, $G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, G)$ of CTTD (whose construction was easily computed in polynomial time). 
-	
-If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). 
+Let $\hat G_{lc'} = 1$, $\hat G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, \hat G)$ of CTTD (whose construction was easily computed in polynomial time). 
+
+We will now see that $(H, P, T, \hat G)$ has a feasible schedule $f$ if and only if $G$ is $k$ colorable.
+%If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). 
 Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). 
 Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. 
 If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). 
