@@ -99,9 +99,11 @@ We henceforth refer to the courses, or events as \emph{talks}.
 		\item $\sum\limits_{j=1}^m f(i,j,h) \le 1$ for all $1 \le i \le n$ and $h \in H$ (no presenter is giving more than one talk simultaneously).
 	\end{enumerate}
 \end{quote}
-In the following section we consider extensions and modifications of the TTD problem that incorporate requirements arising from our application.
+
 
 \section{Conference scheduling problem}\label{sec.desc}
+We now consider extensions and modifications of the TTD problem that incorporate requirements arising from our application.
+
 \subsection{Conference TTD Problem}
 Although TTD solves an important portion of our target problem, the requirements of a conference may be more involved, for example we may require that there may be multiple presenters for each talk. 
 The constraint (c) of TTD explicitly forbid this; in particular, (c) ensures that each talk is scheduled to exactly one presenter. 
@@ -118,7 +120,7 @@ We call this variant the Conference Timetable Decision problem (CTTD).
 \end{quote}
 
 We now show that CTTD is \cNP-complete via reduction from the Graph $k$-colorability problem, the decision problem of determining whether a graph admits a $k$-coloring, which is well known to be \cNP-complete \cite{garey76_2}.
-We note that although result is not surprising, it does not follow trivially via reduction from TTD.
+%We note that although result is not surprising, it does not follow trivially via reduction from TTD.
 
 \begin{prop}
 	CTTD is \cNP-Complete.
@@ -126,25 +128,33 @@ We note that although result is not surprising, it does not follow trivially via
 \begin{proof}\label{cttd_np}
 We first note that CTTD is clearly in \cNP.  
 %We first note that CTTD $\in$ \cNP. The function $f$ is a certificate of size $O(nm|H|)$, and the requirements on $f$ (a-d) are easily checked in polynomial time.
-Let $G=(V,E),k$ be an instance of Graph $k$-Colorability, we will show how it can be transformed to an equivalent instance of CTTD. 
-Define $H=\{1, 2, \cdots, k\}$ and for each vertex $v_j \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ let $T_j = H$. 
+Given a graph $G=(V,E)$ and a positive integer $k$, we will show how to construct an instance of CTTD that is feasible if and only if $G$ is $k$-colorable.
+Essentially, a talk is created to correspond to each vertex in $G$, each of the $k$ colors corresponds to an hour in which talks can be scheduled and speakers are created to correspond to the edges in $G$.
+More formally, define $H=\{1, 2, \cdots, k\}$ and for each vertex $v_j \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ let $T_j = H$. 
 For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. 
-Now, $e_l = (c,d)$ where $c,d \in V$. Let $c'$ be in the index of $c \in E$ and $d'$ be the index of $d \in E$. 
-Let $\hat G_{lc'} = 1$, $\hat G_{ld'} = 1$, and let all other entries be zero. We now have an instance $(H, P, T, \hat G)$ of CTTD (whose construction was easily computed in polynomial time). 
+For each $e_l = (v_i,v_j)\in E$, where $v_i,v_j \in V$, we let $\hat G_{li} = \hat G_{lj} = 1$, and let $\hat G_{lk}=0$ for other values of $k$. 
+Finally, for each node $v_i\in V$ with degree zero in $G$, we create an additional speaker $l$ with $\hat G_{li} = 1$ and $\hat G_{lk}=0$ for other values of $k$, this is simply to ensure that each talk has a speaker and will be assigned a time slot in a feasible schedule.
+We now have an instance $(H, P, T, \hat G)$ of CTTD (whose construction was easily computed in polynomial time). 
 
-We will now see that $(H, P, T, \hat G)$ has a feasible schedule $f$ if and only if $G$ is $k$ colorable.
+We now observe that $(H, P, T, \hat G)$ has a feasible schedule $f$ if and only if $G$ is $k$-colorable.
+Given a feasible schedule $f$, each vertex $v_k$ in $G$ is assigned color $h$, where $h$ is the timeslot in which talk $k$ is assigned.
+For any edge $e_l=(v_i,v_j)\in E$ we note that since a speaker $l$ was created to give talks $i$ and $j$ they will not be scheduled in the same time slots, and thus $v_i,v_j$ are assigned different colors, leading to a valid $k$-coloring of $G$.
+Conversely, given a $k$-coloring of $G$ it is easy to construct a feasible schedule $f$ for $(H, P, T, \hat G)$ using the same idea.
+Finally we conclude that CTTD is \cNP-Complete.
 %If and only if algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d). 
-Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). 
-Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. 
-If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). 
-But, requirement (c) ensures that in this case $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). 
-Finally, for any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (d).
-	
-In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is \cNP-Complete, CTTD is \cNP-Complete.
+%Without loss of generality we assume that the graph is connected (in the disconnected case we can solve the connected subgraph which will admit the same $k$-Colorability). 
+%Then, for any talk $T_j$ (corresponding to vertex $v_j$)  by requirement (b) there exists at least one $i, h$ such that $f(i,j,h) = 1$. 
+%If $v_j$ has more than one edge then there will exist another $i',h'$ such that $f(i',j,h')=1$ (recall that all entires of $G$ are either zero or one). 
+%But, requirement (c) ensures that in this case $h=h'$ and so for any $T_j$ there is only one $h$ and thus $v_j$ has color $h \in \{1,2,\cdots,k\}$ (since $T_j=P_i=H$ by requirement (a)). 
+%Finally, for any two scheduled talks $T_j$ and $T_{j'}$ with a common presenter $P_i$ (corresponding to adjacent vertices $v_j, v_{j'}$) each will have a different hour (color) $h$ by requirement (d).
+%In conclusion, any algorithm that accepts or rejects our instance of CTTD would have the same behvior as an algorithm for Graph $k$-Colorability, and since Graph $k$-Colorability is \cNP-Complete, CTTD is \cNP-Complete.
 \end{proof}
 
 \subsection{Basic Conference TTD Problem}
-Lovelace showed that a relaxed version of TTD (called BCS for ``Basic Course Scheduling") can be solved in polynomial time using a network flow model \cite{lovelace2010}. The principal differences between BCS and TTD are the reduction of many ``hard" requirements such as those insisting that a presenter give \emph{exactly} a certain number of talks of a certain type to simply saying they may give \emph{at most} a number of talks for which they are \emph{willing} to give. BCS does maintain a hard requirement that all presentations must be scheduled (otherwise simply not holding the conference at all would be a feasible solution!), it simply is less picky on who exactly does the presenting. We formulate BCS in terms our previously used nomenclature as the Basic Timetable Decision Problem (BTTD).
+Lovelace showed that a relaxed version of TTD (called BCS for ``Basic Course Scheduling") can be solved in polynomial time using a network flow model \cite{lovelace2010}. 
+The principal differences between BCS and TTD are the reduction of many ``hard" requirements such as those insisting that a presenter give \emph{exactly} a certain number of talks of a certain type to simply saying they may give \emph{at most} a number of talks for which they are \emph{willing} to give. 
+BCS does maintain a hard requirement that all presentations must be scheduled, but offers flexibility in which speaker makes each presentation.
+We give a formulation of BCS using notation consistent with our description of the Basic Timetable Decision Problem (BTTD).
 \begin{quote}
 	\textsc{Basic Timetable Decision Problem}
 	
