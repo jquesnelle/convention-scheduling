@@ -138,7 +138,7 @@ Finally we conclude that CTTD is NP-Complete.
 
 \subsection{Basic Conference TTD Problem}
 Lovelace showed that a relaxed version of TTD (called BCS for ``Basic Course Scheduling") can be solved in polynomial time using a network flow model \cite{lovelace2010}. 
-The principal differences between BCS and TTD are the reduction of many ``hard" requirements such as those insisting that a presenter give \emph{exactly} a certain number of talks of a certain type to simply saying they may give \emph{at most} a number of talks for which they are \emph{willing} to give. 
+The principal differences between BCS and TTD are the reduction of many ``hard" requirements such as those insisting that a presenter give \emph{exactly} a certain number of talks of a certain type to simply saying they may give \emph{at most} the number of talks for which they are \emph{willing} to give. 
 BCS does maintain a hard requirement that all presentations must be scheduled, but offers flexibility in which speaker makes each presentation.
 We give a formulation of BCS using notation consistent with our description of the Basic Timetable Decision Problem (BTTD).
 
@@ -310,7 +310,7 @@ We would like to simply iterate over $\mathcal F$ for a particular pair of hour 
 If we didn't allow co-presenters (like TTD) then we could simply make this sum less than or equal to one. But, for talks with co-presenters this sum varies. 
 To overcome this we create indicator variables $g_{j,h,r}$ where $g_{j,h,r}=1$ whenever talk $j$ is scheduled at hour $h$ in room $r$; 
 this is modeled in constraint \ref{ectto_ip_constraint_e_1}, where $U$ represents a sufficiently large number.
-Finally, constraint \ref{ectto_ip_constraint_e_1} ensures that no room is multiply booked by checking the sum of $g_{j,h,r}$ for each pair $h,r$.
+Finally, constraint \ref{ectto_ip_constraint_e_1} ensures that no room is multi-booked by checking the sum of $g_{j,h,r}$ for each pair $h,r$.
 
 Solving this feasibility problem proved tractable. 
 We solved this formulation with the open source IP solver CBC on PC2013 with varying numbers of talks pruned out to see how the model scales. 
