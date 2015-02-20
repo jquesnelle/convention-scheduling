@@ -303,13 +303,13 @@ To ensure requirement (c) we force that all co-presenters have the same schedule
 
 Requirements (a)-(c) guarantee that all presenters are scheduled for their talks and that co-presenters are scheduled together. 
 Requirement (d) ensures that for presenters with multiple talks that these talks are at different hours. 
-For each presenter $i$ and hour $h$, the sum of their schedule variables for their talks in all rooms must be less than one (constraint \ref{ectto_ip_constraint_d}).
+For each presenter $i$ and hour $h$, the sum of their schedule variables for their talks in all rooms must be less than or equal to one (constraint \ref{ectto_ip_constraint_d}).
 
 The final requirement (e) ensures that room scheduling is exclusive. 
 We would like to simply iterate over $\mathcal F$ for a particular pair of hour $h$ and room $r$, summing all of these together. 
 If we didn't allow co-presenters (like TTD) then we could simply make this sum less than or equal to one. But, for talks with co-presenters this sum varies. 
 To overcome this we create indicator variables $g_{j,h,r}$ where $g_{j,h,r}=1$ whenever talk $j$ is scheduled at hour $h$ in room $r$; 
-this is modeled in constraint \ref{ectto_ip_constraint_e_1}), where $U$ represents a sufficiently large number.
+this is modeled in constraint \ref{ectto_ip_constraint_e_1}, where $U$ represents a sufficiently large number.
 Finally, constraint \ref{ectto_ip_constraint_e_1} ensures that no room is multiply booked by checking the sum of $g_{j,h,r}$ for each pair $h,r$.
 
 Solving this feasibility problem proved tractable. 
@@ -386,6 +386,9 @@ All computations were run on a machine with 4 12-core Intel Xeon E5-2695 CPUs ru
 After finding a non-conflicting schedule for uniformly distributed random attendees that followed the attendance counts in PC2013 we turned our attention to how the solver would react when the random attendees were not distributed uniformly. 
 Our intuition was that, like the actual attendance figures, the distribution of attendance per attendee would not be evenly spaced out; there would be some attendees who went to many talks, and some who went to only a few. 
 We chose a normal distribution with $\mu = 500, \sigma = 100$. 
+For each attendance in the PC2013 distribution (Figure \ref{2013_attendance_distribution}) a random integer from the normal distribution was chosen. 
+Since $\mu = 500$ those attendees with index around $500$ were much more likely to be chosen to RSVP to the talk then those with indices $50$ or $950$, which implemented our intuition that a small percentage of attendees will RSVP for many talks while the bulk of those remaining will RSVP to relatively few.
+In addition, we added a check to ensure that no attendee was selected to attend more talks than were hours available; such a scenario would automatically preclude a zero objective value.
 Even with an extremely powerful computer to run our model on and a state-of-the-art commercial solver we were unable to solve this instance after 24 hours. 
 To help understand this phenomenon we created a half-sized problem (half as many talks and hours) and ran the model with decreasing values of $\sigma$ and found that the solving time exploded exponentially as $\sigma$ decreased; the average running time for $\sigma = 200$ was 22 seconds but increased to 22,683 seconds for $\sigma = 100$.
 
