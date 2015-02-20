@@ -40,8 +40,8 @@ Improvements to the model, including a symmetry breaking reformulation and a dua
 
 This project was motivated by the problem of scheduling PenguiCon \cite{pc}, a conference organized by the open-source community in Michigan.  
 The conference typically includes approximately 250 events such as lectures, demonstrations and panel discussions, all of which must be scheduled into rooms and time slots.
-Many of the events involve multiple presenters/panelists, and many presenters participate in more than one event; it is a hard constraint that no speaker can be multi-booked in a given time period.
-Furthermore, the registration website gives conference participants the ability to ``RSVP" to events before the schedule is generated, giving the extra complication of trying to generate the schedule based on these RSVPs that minimizes conflicts amongst presentations that attendees had previously indicated a common interest.
+Many of the events involve multiple presenters/panelists, and many presenters participate in more than one event; it is a hard constraint that no speaker can be multi-booked during a given time period.
+Furthermore, the registration website will give conference participants the ability to ``RSVP" to events before the schedule is generated, giving the extra complication of trying to generate the schedule based on these RSVPs that minimizes conflicts amongst presentations that attendees had previously indicated a common interest.
 Our problem is related to previously studied conference and class scheduling problems but includes what we believe is a novel and difficult combination of constraints and objectives.
 The goal of this paper is to model our problem, relate it to previous work, and implement solution methods that can be deployed to schedule the PenguiCon conference in practice.
 
@@ -57,7 +57,7 @@ Section~\ref{sec.conclusion} provides concluding remarks.
 One of the oldest scheduling problems that has been studied is the \emph{timetable design problem} (TTD). 
 Given a set of time slots, a set of teachers and their available teaching hours, and a matrix describing which courses each teacher is required to teach,  the TTD problem is the problem of determining if there exists a schedule that satisfies the constraints. 
 TTD was shown to be NP-Complete in 1976 via reduction from 3-SAT \cite{even76}. 
-However it is notable that certain variants of the TTD problem are know to be in P. 
+However it is notable that certain variants of the TTD problem are know to be polynomial time solvable. 
 For example, if each teacher is only available for up to two hours, or each teacher is able to teach any class, then the problem is solvable in polynomial time \cite{garey76}.
 
 The basic TTD model often doesn't map well onto several common problems such as scheduling courses for a university. 
@@ -74,7 +74,7 @@ We henceforth refer to the courses, or events as \emph{talks}.
 	
 	\underline{INSTANCE}:
 	\begin{enumerate}
-		\item a finite set $H$ of hours;
+		\item a finite set $H$ of hours and numbers $n$ and $m$ indicating the number of presenters and talks, respectively; 
 		\item a collection $P = \{P_1, P_2, \cdots, P_n\}$, where $P_i \subseteq H$ (there are $n$ presenters and $P_i$ is the set of hours during which the $i$th presenter is available for presenting);
 		\item a collection $T = \{T_1, T_2, \cdots, T_m\}$, where $T_j \subseteq H$ (there are $m$ talks and $T_j$ is the set of hours during which the $j$th talk can be given);
 		\item an $n \times m$ matrix $G$ of nonnegative integers ($G_{ij}$ is the number of hours (times) which the $i$th presenter will give the $j$th talk).
@@ -97,27 +97,28 @@ We henceforth refer to the courses, or events as \emph{talks}.
 We now consider extensions and modifications of the TTD problem that incorporate requirements arising from our application.
 
 \subsection{Conference TTD Problem}
-Although TTD solves an important portion of our target problem, the requirements of a conference may be more involved, for example we may require that there may be multiple presenters for each talk. 
-The constraint (c) of TTD explicitly forbid this; in particular, (c) ensures that each talk is scheduled to exactly one presenter. 
+Although the TTD problem is related to our target problem, it does not capture all of the decisions and constraints involved.
+One requirement is that some talks may involve multiple presenters, each of which may have additional differing scheduling conflicts.
+In the TTD model constraint (c) ensures that each talk is scheduled to exactly one presenter. 
 In the case where multiple presenters are allowed we most likely wish to add a different constraint: that for each talk \emph{every} presenter that can be scheduled is scheduled. 
-As an illustration, if Alice is giving talks A, B, and C, and Bob is giving talks B, C, and D, all scheduled instances of B and C should include both Alice and Bob. 
+For example, if Alice is giving talks A, B, and C, and Bob is giving talks B, C, and D, all scheduled instances of B and C should include both Alice and Bob. 
 We call this variant the Conference Timetable Decision problem (CTTD).
 \begin{quote}
 	\textsc{Conference Timetable Decision Problem}
 	
 	Same as TTD, but with constraint (c) changed to
 	\begin{enumerate}[(c)]
-		\item $G_{ij} > 0 \land G_{i'j} > 0 \Rightarrow f(i,j,h)=f(i',j,h)$ for all $1 \le i,i' \le n$, $1 \le j \le m$ and $h \in H$ (all presenters that are required to give a talk must be present at all instances of that talk);
+		\item ($G_{ij} > 0) \land (G_{i'j} > 0) \Rightarrow f(i,j,h)=f(i',j,h)$ for all $1 \le i,i' \le n$, $1 \le j \le m$ and $h \in H$ (all presenters that are required to give a talk must be present at all instances of that talk);
 	\end{enumerate}
 \end{quote}
 
 We now show that CTTD is NP-complete via reduction from the Graph $k$-colorability problem, the decision problem of determining whether a graph admits a $k$-coloring, which is well known to be NP-complete \cite{garey76_2}.
 %We note that although result is not surprising, it does not follow trivially via reduction from TTD.
 
-\begin{proposition}
+\begin{proposition}\label{cttd_np}
 	CTTD is NP-Complete.
 \end{proposition}
-\begin{proof}\label{cttd_np}
+\begin{proof}
 We first note that CTTD is clearly in NP.  
 Given a graph $G=(V,E)$ and a positive integer $k$, we will show how to construct an instance of CTTD that is feasible if and only if $G$ is $k$-colorable.
 Essentially, a talk is created to correspond to each vertex in $G$, each of the $k$ colors corresponds to an hour in which talks can be scheduled and speakers are created to correspond to the edges in $G$.
@@ -146,7 +147,7 @@ We give a formulation of BCS using notation consistent with our description of t
 	
 	\underline{INSTANCE}:
 	\begin{enumerate}
-		\item a finite set $H$ of hours;
+		\item a finite set $H$ of hours and numbers $n$ and $m$ indicating the number of presenters and talks, respectively; 
 		\item a collection $P = \{P_1, P_2, \cdots, P_n\}$, where $P_i \subseteq H$ (there are $n$ presenters and $P_i$ is the set of hours during which the $i$th presenter is available for presenting);
 		\item a collection $T = \{T_1, T_2, \cdots, T_m\}$, where $T_j \subseteq H$ (there are $m$ talks and $T_j$ is the set of hours during which the $j$th talk can be given);
 		\item a function $L : \mathbb Z^+ \rightarrow \mathbb Z_0^+$, where $L(n)$ is the maximum number of talks that the $n$th presenter can give;
@@ -190,11 +191,10 @@ We observe that after this constraint is introduced, we may apply the same reduc
 %Perhaps somewhat surprisingly the mere modification of requirement (c) in BTTD to our stronger version in BCTTD is enough to move the problem from P into NP-Complete. \\
 
 \subsection{Extended Conference TTD Problem}
-We now present a modification to CTTD that introduces room assignments and associated compatibility restrictions.
-CTTD ensures that each presenter is correctly scheduled for their presentations without conflict, but this may not be sufficient in a real-world scenario. 
-A more useful solution would be one that not only schedules presenters and presentations but also assigns to each presentation a room in which the presentation will take place (ensuring that each presentation has exclusive access to its room at each hour). 
-Furthermore, symmetric with the suitability sets in TTD that restricts the availability of presentations and presenters to certain times, rooms also may only be available during certain times or suitable for certain presentations, so this must be factored into the problem. 
-To this end we present the Extended Conference Timetable Decisions problem (ECTTD).
+We now present a modification to CTTD that introduces room assignment decisions and room compatibility constraints.
+The CTTD problem assigns speakers to talks and time slots but, as in many other applications, we also require that talks are assigned to suitable rooms.
+Furthermore, rooms also may only be available during certain times or suitable for certain talks and this information must be factored into the problem. 
+This leads us to the Extended Conference Timetable Decision problem (ECTTD).
 \begin{quote}
 	\textsc{Extended Conference Timetable Decision Problem}
 	
@@ -218,21 +218,16 @@ To this end we present the Extended Conference Timetable Decisions problem (ECTT
 		\item $\sum\limits_{j=1}^m f'(j,h,r) \le 1$ for each $h \in H$ and $r \in R$ where $f'(j,h,r) = 1 \iff \exists i \text{ with } 1 \le i \le n$ such that $f(i,j,h,r)=1$, and 0 otherwise (room $r$ is scheduled for at most one talk at hour $h$).
 	\end{enumerate}
 \end{quote}
-\begin{corollary}
+We also note that since this is a clear generalization of CTTD, and in the class NP, it is also NP-Complete.
+\begin{proposition}
 	ECTTD is NP-Complete.
-\end{corollary}
-\begin{proof}
-Let $L=(H,P,T,G)$ be an instance of CTTD. Let $R=T$, $A=\{H,H,\cdots,H\}$ with $|A|=R$ (i.e. each $A_k=H$), and  likewise let $S=\{H,H,\cdots,H\}$ with $|S|=|T|$. 
-We now have an instance $L'=(H,P,T,G,R,A,S)$ of ECTTD (we note with slight amusement the embedded GRAPHS anagram). 
-As with CTTD if an algorithm accepts this instance then there exists a function $f$ that meets the requirements (a-d).
-\end{proof}
+\end{proposition}
 
 \subsection{Preference Conference Optimization Problem}
 We have examined several different variations of scheduling problems as they relate to conferences; we now offer a final variation that will be the subject of study for the rest of the paper. 
-In particular we are interested in not only finding an acceptable schedule but also a schedule that minimizes ``conflicts" to conference attendees. 
-To this end, we will add a new piece of data to the puzzle, namely a set of conference attendees and their preferences for talks they would like to attend. 
-Armed with this information we can attempt to find not only a schedule that meets the requirements of rooms, presenters, etc. but also one that is most acceptable to the attendees. 
-We call this the Preference Conference Optimization problem (PCO).
+In particular we are interested in not only finding a schedule that is feasible with respect to speaker and room logistics,  but one that also minimizes ``RSVP conflicts" to conference attendees. 
+Namely, given the set of conference attendees and their preferences for talks they would like to attend, we want to minimize the total number of times that a given attendee has shown preference for a pair of talks that are scheduled in the same time period.
+We call the resulting optimization problem the Preference Conference Optimization problem (PCO).
 \begin{quote}
 	\textsc{Preference Conference Optimization Problem}
 	
@@ -247,18 +242,16 @@ We call this the Preference Conference Optimization problem (PCO).
 	\begin{gather*}
 		f(i,j,h,r) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \times R \rightarrow \{0,1\}
 	\end{gather*}
-	that minimizes the number of conflicts to the $W$ matrix subject to the constraints in ECTTD. We define a conflict as occurring when $f(i,j,h,r)=1, f(i',j',h,r')=1$ and there exists an $e$ such that $W_{ej}=1$ and $W_{ej'}=1$.
+	that satisfies all the constraints of the ECTTD problem while minimizing the sum of the RSVP conflicts, where we define an RSVP conflict to be any tuple $(e,j,j')$ such that  there exist $i,i',h,r$ and $r'$ such that $f(i,j,h,r)=f(i',j',h,r')=1$ where $W_{ej}=1$ and $W_{ej'}=1$.
 \end{quote}
 
 \section{Integer programming models}\label{sec.model}
 
-\subsection{Overview}
 We will present integer programming models that can solve PCO and ECTTD. 
-%Integer programming is merely one way of solving these problems, other papers have described strictly combinational methods of solving similar problems \cite{cheng}. 
 The data used to measure the models comes from a real conference held in 2013, which we shall refer to as PC2013. 
 PC2013 had 195 presenters giving a total of 253 talks. 
 Figure \ref{fig_pc2013_graph} helps illustrate the data we worked with: each vertex represents a talk and adjacent vertices share a common presenter and cannot be scheduled at the same time. 
-By Theorem \ref{cttd_np} solving to CTTD is equivalent to asking if this graph admits an $h$-color (for some $h$, the number of timeslots available at the conference).
+By Proposition~\ref{cttd_np}, solving to CTTD is equivalent to asking if this graph admits an $h$-color (for some $h$, the number of timeslots available at the conference).
 \begin{figure}[h!]
 	\caption{Presenter conflicts that must be scheduled around in PC2013}
 	\centering
@@ -267,121 +260,115 @@ By Theorem \ref{cttd_np} solving to CTTD is equivalent to asking if this graph a
 	\label{fig_pc2013_graph}
 \end{figure}
 
-\subsection{ECTTO}
-The first problem we will solve with integer programming is the Extended Course Timetable Optimization (ECTTO) problem, which is the optimization version of ECTTD (i.e. find a schedule, not simply verify one exists). 
-The goal of ECTTO is to find a scheduling function $f$. A possible problem is that $f$ can be very big.
+\subsection{Model for the Extended Conference Timetable Decision Problem}
+
+Before describing the model for the PCO problem, we give an integer programming model where feasible solutions determine values of functions $f$ which correspond directly to schedules that satisfy the constraints laid out in the ECTTD decision problem.
+We note that the size of $f$, i.e. the number of variables in our model, can be very large when building models corresponding to our application data.
 \begin{gather*}
 	\text{size of } f = \text{\# of presenters } \times \text{ \# of talks } \times \text{ \# of hours } \times \text{ \# of rooms }
 \end{gather*}
 For PC2013, $\text{size of } f = 193 \times 253 \times 37 \times 15 = $ 27,421,440. 
-Although not unheard of, this is a very large number of variables for the solver to work with. 
-However, we know that several (nearly all) of these variables will be zero based on information we have at formulation time. 
+This number of variables could be problematic computationally, however, we know that many (nearly all) of these variables will be zero based on information we have at formulation time. 
 For example, if a presenter $i$ doesn't give talk $j$, then $f(i,j,h,r) = 0$ for all $h \in H, r \in R$. 
-We create a set of variables $\mathcal F \subseteq \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \times R$ where $f_{i,j,h,r} \in \mathcal F \iff $ presenter $i$ gives talk $j$, the talk $j$, presenter $i$ and room $r$ are available at hour $h$, and room $r$ is suitable for the $j$th talk. 
-In addition to this condition, we restrict the inclusion of variables in $\mathcal F$ to the intersection of the available hours of all \emph{co-presenters} (pairs of presenters that give the same talk), e.g. if co-presenters $i,i'$ have availability sets $\{h_2,h_3\}$ and $\{h_3,h_4\}$ (assuming room and talk availability is at least $\{h_2, h_3, h_4\}$) then only variables with $h=h_3$ for these co-presenters and talk will be included. 
-In practice, the reduction of our solution space to only $\mathcal F$ gives us an enormous performance gain. 
+Although integer programming solver may automatically fix such variables to zero in the preprocessing phase, we exclude these variables from the model at the time of construction.
+We create an index set  $\mathcal F \subseteq \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \times R$ where $f_{i,j,h,r} \in \mathcal F $ only if presenter $i$ gives talk $j$, the talk $j$, presenter $i$ and room $r$ are available at hour $h$, and room $r$ is suitable for the $j$th talk. 
+In addition to this condition, we restrict the inclusion of variable indices in $\mathcal F$ to the intersection of the available hours of all \emph{co-presenters} (pairs of presenters that give the same talk), e.g. if co-presenters $i,i'$ have availability sets $\{h_2,h_3\}$ and $\{h_3,h_4\}$ (assuming room and talk availability is at least $\{h_2, h_3, h_4\}$) then only variables with $h=h_3$ for these co-presenters and talk will be included. 
+In practice, the reduction of our solution space to only $\mathcal F$ give a massive performance gain. 
 For PC2013, this immediately reduced the number of variables down to 91,514 (a reduction of 99.997\%).
 
-The variables in $\mathcal F$ can be thought of as a sparse representation of the domain of $f$. 
-In our following formulation we will wish to ``iterate" over the dimensions of $f$, but only for those values with corresponding variables in $\mathcal F$. 
-We will use a special conference to represent this. For example, when we say ``for all $j,h,r \in \mathcal F_i$, we mean all variables in $\mathcal F$ of the form $f_{i,j,h,r}$ with $i$ fixed.
-
-In addition to $\mathcal F$ we will use the intermediate variable set $\mathcal G$ for convenience where $g_{j,h,r} \in \mathcal G \iff $ talk $j$ can be given by any presenter at hour $h$ in room $r$. 
-We will now describe a formulation that implements each of the constraints on $f$ in ECTTO.
+The variables indexed by $\mathcal F$ can be thought of as a sparse representation of the interesting elements of the domain of $f$. 
+In addition to $\mathcal F$ we will use the index set $\mathcal G$ to represent tuples $(j,h,r)$ for which talk $j$ can be given by any presenter at hour $h$ in room $r$, and variables $g_{j,h,r}$ will indicate whether or not this occurs.
+We will now describe a formulation that implements each of the constraints on $f$ in ECTTD.
 \begin{quote}
-	\textbf{ECTTO formulation}
+	\textbf{ECTTD formulation}
 	\begin{flalign}
 		&\text{minimize: } 0& \\
 		&\text{subject to:}&\\
-		&\sum_{h,r \in \mathcal F_{i,j}} f_{i,j,h,r} = G_{ij}& \text{for every presenter $i$ and talk $j$}\label{ectto_ip_constraint_b}\\
+		&\sum_{h,r: (i,j,h,r)\in \mathcal F} f_{i,j,h,r} = G_{ij}& \text{for every presenter $i$ and talk $j$}\label{ectto_ip_constraint_b}\\
 		&f_{i,j,h,r} - f_{i',j,h,r} = 0\label{ectto_ip_constraint_c_2}& \text{for every talk $j$ with co-presenters $i$, $i'$}\\
-		&\sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \le 1& \text{for every presenter $i$ and hour $h$ }\label{ectto_ip_constraint_d}\\
-		&\left(\sum_{i \in \mathcal F_{j,h,r}} f_{i,j,h,r}\right) - U \times g_{j,h,r} \le 0& \text{for each $g_{j,h,r} \in \mathcal G$} \label{ectto_ip_constraint_e_1}\\
-		&\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le 1& \text{for each hour $h$ and room $r$}\label{ectto_ip_constraint_e_2}\\
+		&\sum_{j,r: (i,j,h,r)\in \mathcal F} f_{i,j,h,r} \le 1& \text{for every presenter $i$ and hour $h$ }\label{ectto_ip_constraint_d}\\
+		&\left(\sum_{i: (i,j,h,r)\in \mathcal F} f_{i,j,h,r}\right) - U \times g_{j,h,r} \le 0& \text{for each $g_{j,h,r} \in \mathcal G$} \label{ectto_ip_constraint_e_1}\\
+		&\sum_{j: (j,h,r)\in \mathcal G} g_{j,h,r} \le 1& \text{for each hour $h$ and room $r$}\label{ectto_ip_constraint_e_2}\\
 		&\text{binary: } f_{i,j,h,r}, g_{j,h,r}
 	\end{flalign}
 \end{quote}
-The first requirement (a) of ECTTO merely enforces all availability and suitability sets. 
-We implicitly enforce this in our model by considering only the variables in $\mathcal F$. 
+The first requirement (a) of ECTTD merely enforces all availability and suitability sets. 
+We implicitly enforce this in our model by considering only the variables indexed over $\mathcal F$. 
 As such, no specific constraints are needed in our model.
 
-The second requirement (b) ensures that every presenter is scheduled for all of their talks, which we receive as parameter $G$ to ECTTO where $G_{ij}$ is the number of times presenter $i$ should give talk $j$. 
+The second requirement (b) ensures that every presenter is scheduled for all of their talks, which we receive as parameter $G$ to ECTTD where $G_{ij}$ is the number of times presenter $i$ should give talk $j$. 
 For each presenter $i$ and talk $j$, the sum of the times they are scheduled (over all hours and rooms) should be $G_{ij}$; this is constraint \ref{ectto_ip_constraint_b}.
 
 To ensure requirement (c) we force that all co-presenters have the same schedule for their shared talk (constraint \ref{ectto_ip_constraint_c_2}).
 
 Requirements (a)-(c) guarantee that all presenters are scheduled for their talks and that co-presenters are scheduled together. 
-Requirement (d) makes sure that for presenters with multiple talks that these talks are at different hours (as we know a person cannot be in two places at once!) For each presenter $i$ and hour $h$, the sum of their schedule variables for their talks in all rooms must be less than one (constraint \ref{ectto_ip_constraint_d}).
+Requirement (d) ensures that for presenters with multiple talks that these talks are at different hours. 
+For each presenter $i$ and hour $h$, the sum of their schedule variables for their talks in all rooms must be less than one (constraint \ref{ectto_ip_constraint_d}).
 
-The final requirement (e) makes sure that room scheduling is exclusive. 
-If omitted then multiple talks could be legally scheduled in the same room at the same time. 
+The final requirement (e) ensures that room scheduling is exclusive. 
 We would like to simply iterate over $\mathcal F$ for a particular pair of hour $h$ and room $r$, summing all of these together. 
 If we didn't allow co-presenters (like TTD) then we could simply make this sum less than or equal to one. But, for talks with co-presenters this sum varies. 
-To overcome this we create indicator variables $g_{j,h,r}$ where $g_{j,h,r}=1 \iff$ talk $j$ is scheduled at hour $h$ in room $r$. 
-To do this we use a ``boolean-cast conversion trick" (constraint \ref{ectto_ip_constraint_e_1}). 
-First, a large constant $U$ is picked, in this case we let $U=\text{size of } f$. 
-For every pair triple $j,h,r$ we sum the values for all presenters. 
-This sums over a subset of $f$, so it clearly must be less than $U$ since $f$'s values are 0-1. 
-If the talk $j$ is not scheduled at hour $h$ in room $r$ then the left hand side of the constraint will be zero, and since we are minimizing $g_{j,h,r}$ will be zero. 
-If the talk is scheduled then the right hand will be greater than zero, and so $g_{j,h,r}$ will be forced to one to ensure the entire expression is less than zero. 
-Lastly, constraint \ref{ectto_ip_constraint_e_1} ensures that no room is multiply booked by checking the sum of $g_{j,h,r}$ for each pair $h,r$.
+To overcome this we create indicator variables $g_{j,h,r}$ where $g_{j,h,r}=1$ whenever talk $j$ is scheduled at hour $h$ in room $r$; 
+this is modeled in constraint \ref{ectto_ip_constraint_e_1}), where $U$ represents a sufficiently large number.
+Finally, constraint \ref{ectto_ip_constraint_e_1} ensures that no room is multiply booked by checking the sum of $g_{j,h,r}$ for each pair $h,r$.
 
-We solved this formulation with the open source IP solver CBC on PC2103 with varying numbers of talks pruned out to see how the model scales. 
+Solving this feasibility problem proved tractable. 
+We solved this formulation with the open source IP solver CBC on PC2013 with varying numbers of talks pruned out to see how the model scales. 
 The results are given in Figure \ref{ectto_run_time}.
 \begin{figure}[h!]
-	\caption{Run time of ECTTO model}
+	\caption{Run time of ECTTD model}
 	\centering
 	\input ecttd_model_run_time
 	\label{ectto_run_time}
 \end{figure}
 
-\subsection{PCO}
+\subsection{Model for the Preference Conference Optimization Problem}
 We now turn our attention to the Preference Conference Optimization (PCO) problem. 
-PCO adds an additional layer of complexity to ECTTO by including a matrix of preferences for attendees with the goal of minimizing the number of conflicts caused by concurrent talks. 
-Through experimentation we have found that PCO greatly increases the difficulty of solving our conference scheduling problem. 
-We first present our integer programming model for PCO.
+PCO adds an additional layer of complexity to ECTTD by including a matrix of preferences for attendees with the goal of minimizing the number of conflicts caused by concurrent talks. 
+Through experimentation we have found that considering these preferences significantly increases the difficulty of solving our conference scheduling problem. 
+We now present an integer programming model for PCO.
 
-The PCO model we present builds on our previous ECTTO model. 
-In addition to the $G$ variables which collapse the four dimensional $f$ function down to three dimensions ($\text{talk} \times \text{hour} \times \text{room}$), all the while considering only those variables for which a feasible schedule is even possible given the different availability constraints, we will introduce four new sets for PCO. 
+The PCO model we present builds on our previous ECTTD model. 
+In addition to the $G$ variables which collapse the four dimensional $f$ function down to three dimensions ($\text{talk} \times \text{hour} \times \text{room}$), all the while considering only those variables for which a feasible schedule is even possible given the different availability constraints, we will introduce three new classes of variables for PCO. 
 The first is $z$ which will collapse $g$ to two dimensions ($\text{talk} \times \text{hour}$). 
-Next, we will expand $z$ to $z'$ which will have a three dimensional range from $\text{talk} \times \text{talk} \times \text{hour}$; it will represent if two talks $j, j'$ are both given concurrently at hour $h$. 
-The final set $c$ has the same dimensions and will represent the conflicts (calculated from $W$, the preference matrix) if $j, j'$ are both scheduled at $h$. 
-As with previous models, the corresponding script (e.g. $\mathcal Z$ for $z$) will represent the set of variables that are possible given availability constraints. 
-The final set $w$ summarizes $W$ as a $\text{talk} \times \text{talk} \times \text{hour}$ matrix where each entry is the number of attendees who wish to attend both talks $j,j'$ for all $h$ when $j,j'$ can be given based on talk, presenter, and room availability. 
-Formally, $w_{j,j',h} = |\{e_k \in E \; : \; e_k \text{ has } W_{kj} = 1 \text{ and } W_{kj'} = 1 \}|$ for each $h \in \mathcal{Z}_{j} \cap \mathcal{Z}_{j'}$. 
+Next, we will expand $z$ to $c$ which will have a three dimensional range from $\text{talk} \times \text{talk} \times \text{hour}$; it will indicate if two talks $j, j'$ are given concurrently at hour $h$. 
+%The final variable is $c$, which has the same dimensions and will represent the conflicts (calculated from $W$, the preference matrix) if $j, j'$ are both scheduled at $h$. 
+As with previous models, the corresponding script (e.g. $\mathcal Z$ for $z$) will represent the index set of variables that are possible given availability constraints. 
+The parameter $w$ is constructed from $W$ as a $\text{talk} \times \text{talk} \times \text{hour}$ matrix where each entry is the number of attendees who wish to attend both talks $j,j'$ for all $h$ when $j,j'$ can be given based on talk, presenter, and room availability. 
+Formally, $w_{j,j',h} = |\{e_k \in E \; : \; e_k \text{ has } W_{kj} = 1 \text{ and } W_{kj'} = 1 \}|$ for each $h$ where $(h,j)\cup(h,j') \subseteq \mathcal{Z}$. 
 We will minimize our model on the sum all elements in $c$.
 \begin{quote}
 	\textbf{PCO formulation}
 	\begin{flalign}
-		&\text{minimize: } \sum_{j,j',h \in \mathcal C} c_{j,j',h}& \label{pco_ip_objective} \\
+		&\text{minimize: } \sum_{(j,j',h) \in \mathcal C} w_{j,j',h} \times c_{j,j',h}& \label{pco_ip_objective} \\
 		&\text{subject to:}&\\
-		&\sum_{h,r \in \mathcal F_{i,j}} f_{i,j,h,r} = G_{ij}& \text{for every presenter $i$ and talk $j$}\label{pco_ip_constraint_b}\\
+		&\sum_{h,r:(i,j,h,r) \in \mathcal F} f_{i,j,h,r} = G_{ij}& \text{for every presenter $i$ and talk $j$}\label{pco_ip_constraint_b}\\
 		&f_{i,j,h,r} - f_{i',j,h,r} = 0\label{pco_ip_constraint_c_2}& \text{for every talk $j$ with co-presenters $i$, $i'$}\\
-		&\sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \le 1& \text{for every presenter $i$ and hour $h$ }\label{pco_ip_constraint_d}\\
-		&\left(\sum_{i \in \mathcal F_{j,h,r}} f_{i,j,h,r}\right) - U \times g_{j,h,r} \le 0& \text{for each $g_{j,h,r} \in \mathcal G$} \label{pco_ip_constraint_e_1}\\
-		&\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le 1& \text{for each hour $h$ and room $r$}\label{pco_ip_constraint_e_2}\\
-		&\left(\sum_{j,h \in \mathcal G_{r}} g_{j,h,r}\right) - U \times z_{j,h} \le 0& \text{for each room $r$}\label{pco_ip_constraint_z}\\
-		&\sum_{h \in \mathcal Z_{j}} z_{j,h} = G_{ij}& \text{for each talk $j$ \text{ and some presenter $i$}}\label{pco_ip_constraint_z_2}\\
-		&z_{j,h} + z_{j',h} - 2 \times z'_{j,j',h} \le 1& \text{for each hour $h$ and $j,j' \in \mathcal Z_h$ with $j \ne j'$}\label{pco_ip_constraint_z'} \\
-		&c_{j,j',h} - w_{j,j',h} \times z'_{j,j',h} = 0& \text{for all $j,j',h \in \mathcal {Z'}$} \label{pco_ip_constraint_w}\\
-		&\text{binary: } f_{i,j,h,r}, \; g_{j,h,r}, \; z_{j,h}, \; z'_{j,j',h}&\\
-		&\text{integer: } c_{j,j',h}&
+		&\sum_{j,r:(i,j,h,r) \in \mathcal F} f_{i,j,h,r} \le 1& \text{for every presenter $i$ and hour $h$ }\label{pco_ip_constraint_d}\\
+		&\left(\sum_{i: (i,j,h,r)\in \mathcal F} f_{i,j,h,r}\right) - U \times g_{j,h,r} \le 0& \text{for each $(j,h,r) \in \mathcal G$} \label{pco_ip_constraint_e_1}\\
+		&\sum_{j: (j,h,r) \in \mathcal G} g_{j,h,r} \le 1& \text{for each hour $h$ and room $r$}\label{pco_ip_constraint_e_2}\\
+		&\left(\sum_{j,h: (j,h,r)\in \mathcal G} g_{j,h,r}\right) - U \times z_{j,h} \le 0& \text{for each room $r$}\label{pco_ip_constraint_z}\\
+		&\sum_{h:(j,h) \in \mathcal Z} z_{j,h} = G_{ij}& \text{for each talk $j$ \text{ and some presenter $i$}}\label{pco_ip_constraint_z_2}\\
+		&z_{j,h} + z_{j',h} -  c_{j,j',h} \le 1& \text{for each $  (j,j',h) \in \mathcal C$}\label{pco_ip_constraint_z'} \\
+%		&c_{j,j',h} - w_{j,j',h} \times z'_{j,j',h} = 0& \text{for all $j,j',h \in \mathcal {Z'}$} \label{pco_ip_constraint_w}\\
+		&\text{binary: } f_{i,j,h,r}, \; g_{j,h,r}, \; z_{j,h}, \; c_{j,j',h}&
+%		&\text{integer: } c_{j,j',h}&
 	\end{flalign}
 \end{quote}
-Constraints \ref{pco_ip_constraint_b} - \ref{pco_ip_constraint_e_2} are the as our model for ECTTO. 
+Constraints \ref{pco_ip_constraint_b} - \ref{pco_ip_constraint_e_2} are the as our model for ECTTD. 
 Constraint \ref{pco_ip_constraint_z} begins to build the $z$ variables which will be 0-1 indicators of talk $j$ being given at hour $h$ via the same boolean cast mechanism described previously by collapsing the room entries for $j,h$ in $g$. 
 To ensure that only the correct number of $z$s are set to one, constraint \ref{pco_ip_constraint_z_2} sums all hours $h$ for each talk $j$ and sets it equal to the number of times that talk $j$ was set to be given in the problem instance (the matrix $G$). 
 It is of note that we pick \emph{any} presenter $i$'s entry in $G$ for talk $j$; although it is possible that a co-presenter $i'$ may have a different value for $G_{i'j}$ requirement (c) of PCO explicitly forbids this since it would be impossible for all co-presenters to be at all instances of a talk if they had different entries for their shared talk $j$, thus we can pick any presenter $i$.
 
-The $z$ variables will now be used to generate $z'$, which will indicate if a pair of talks $j,j'$ are being given concurrently at hour $h$. 
-Specifically, $z'_{j,j',h} = 1 \iff z_{j,h} = 1 \text{ and } z_{j',h} = 1$. 
-Constraint \ref{pco_ip_constraint_z'} sets the difference of the sum of the $z$ variables for a particular triple $j,j',h$ and twice the corresponding $z'$ to being less than one. 
-Alone this constraint does little; $z'_{j,j',h} = 1$ always satisfies this. 
-Constraint \ref{pco_ip_constraint_w} sets $c_{j,j',h}$ to be equal to $z'_{j,j',h}$ times $w_{j,j',h}$ (the number of RSVP conflicts if $j$ and $j'$ are scheduled at $h$). 
-The objective of the model is to minimize the sum of $c$ (Constraint \ref{pco_ip_objective}). 
-Thus, $z'_{j,j'h}$ effectively controls if $c_{j,j',h}$ is non-zero and so the solver will attempt to minimize the instances where $z'_{j,j',h} = 1$; it only ``has" to be 1 when both $z_{j,h}$ and $z_{j',h}$ are 1, otherwise $z'{j,j',h}=0$ will also satisfy Constraint \ref{pco_ip_constraint_z'}.
+The $z$ variables will now be used to generate $c$, which indicates if a pair of talks $j,j'$ are being given concurrently at hour $h$. 
+Specifically, constraint \ref{pco_ip_constraint_z'} , enforces that $z_{j,h} = 1 \text{ and } z_{j',h} = 1 \implies c_{j,j',h}=1$. 
+The objective (\ref{pco_ip_objective}) of the model is to minimize the sum of RSVP conflicts.
+Each variable $c_{j,j',h}$ appears with coefficient of $w_{j,j',h}$, which is the number of RSVP conflicts generated by talks $j$ and $j'$ being scheduled in the same time period.
+Note that if the coefficient $w_{j,j',h}$ is nonzero, then the minimization nature of the problem will force the corresponding $c_{j,j',h}$ to take zero value whenever possible.
 
-To measure the efficiency of our model we tested it on our sample set PC2013. Attendance figures we recorded for each talk given at PC2013; a distribution of the attendance per talk is shown in Figure \ref{2013_attendance_distribution}.
+To measure the efficiency of our model we tested it on our sample set PC2013. 
+This data set included information about talks, speakers and attendance, but did not include participant RSVP preferences (as they were not solicited that year), however we may use this data to generate reasonable instances by taking the historical attendance data as a basis for generating hypothetical RSVP preferences.
+Attendance figures we recorded for each talk given at PC2013; a distribution of the attendance per talk is shown in Figure \ref{2013_attendance_distribution}.
 \begin{figure}[h!]
 	\caption{Distribution of attendance at PC2013}
 	\centering
@@ -403,11 +390,12 @@ Even with an extremely powerful computer to run our model on and a state-of-the-
 To help understand this phenomenon we created a half-sized problem (half as many talks and hours) and ran the model with decreasing values of $\sigma$ and found that the solving time exploded exponentially as $\sigma$ decreased; the average running time for $\sigma = 200$ was 22 seconds but increased to 22,683 seconds for $\sigma = 100$.
 
 \subsubsection{Performance considerations}
-One of the reasons integer programming models can explode in running time is when the solver is unable to efficiently deal with symmetries in the model \cite{sherali}. 
+After including RSVP preferences in our test models, the integer programming models became significantly more difficult to solve.
+One possible cause of this is symmetry present in the models, a property that often leads to increased solution time \cite{sherali}.
 An integer programming model is \emph{symmetric} if its variables can be permuted without changing the structure of the problem \cite{margot}. 
 Our model exhibits high amounts of symmetry in relation to the scheduling of talks in rooms. 
 If two rooms have the same availability and suitability set then permuting talk assignments among them in each hour produces no discernible change to the objective. 
-It may be however that the solver will choose to branch early on in its branch-and-bound tree on these room assignments, leading to lots of unnecessary computation. 
+It may be, however, that the solver will choose to branch early on in its branch-and-bound tree on these room assignments, leading to lots of unnecessary computation. 
 In general it is difficult for the solver to detect that such variables ``really" represent the same thing, although there are several mechanisms for  determining and avoiding symmetry in solvers \cite{ostrowski}. 
 However, it is easy for us to identify this symmetry and avoid it.
 
@@ -417,9 +405,9 @@ Two rooms will be said to be \emph{symmetric} if they have the same suitability 
 	\{i \; | \; R_\alpha \in S_i \text{ for all } 1 \le i \le m\} = \{i \; | \; R_\beta \in S_i \text{ for all } 1 \le i \le m\}.
 \end{gather*}
 To break the symmetry we create room \emph{classes} which will represent several rooms with the same attributes. 
-First, we make a new room set $R' = \{ \{r_1, r_2, \cdots, r_p \} \; | \; \text{all } r \in R \text{ are symmetric with each other} \}$. 
+First, we make a new room set $R' = \{ r'=\{r_1, r_2, \cdots, r_p \}\subseteq R \; | \; \text{all } r \in r' \text{ are symmetric with each other} \}$. 
 The corresponding new availability set $A'$ has simply the common availability set for each new $r' \in R'$. 
-For the new suitability set $S'$ we replace each instance of $r$ with the room class that $r$ is a member of. 
+For the new suitability set $S'$ we replace each instance of $r$ with the room class $r'$ that $r$ is a member of. 
 When we solve our model talks will be booked to room classes, avoiding the symmetry that arises by having to consider two essentially ``equal" rooms separately. 
 When our model is solved we will have bookings in room classes, and we can arbitrarily assign the talk to any room in that class. 
 We must make only one adjustment to our model: Constraint \ref{pco_ip_constraint_e_2} in the PCO model ensures that each room has only one talk booked in it per hour. 
@@ -429,20 +417,26 @@ Formally, we will change Constraint \ref{pco_ip_constraint_e_2} to
 	\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le |r|.
 \end{gather}
 It is easy to see that this model degenerates to our regular PCO model when no rooms are symmetric; in this case each room class would contain only one room. 
-In practice the removal of the room symmetries led to around a 5x performance increase for our solver on PC2013 which contained only three room classes but had fourteen rooms (see Figure \ref{2013_normal_sigma_run_time}). 
+In practice the removal of the room symmetries increased performance by roughly a factor of 5x for our solver on PC2013, which contained only three room classes but had fourteen rooms (see Figure \ref{2013_normal_sigma_run_time}). 
 
-One method of potentially improving the performance of integer programming solvers is to \emph{dualize} the objective, by moving some of the constraints into the objective. 
+The next step we took to improve performance was to \emph{dualize} one class of constraints.
+In this technique, these requirements are moved from being hard constraints in the model, to appearing in the objective function with a sufficiently large penalty to ensure their satisfaction.
 We chose to dualize constraint (d), namely that no presenter is scheduled for more than one talk per hour. 
+Intuitively, this seemed like a promising adjustment because these constraints are similar in structure to the RSVP conflicts that are minimized in the objective function.
 We first created 0-1 indicator variables $d_{i,h} = 1 \iff $ presenter $i$ is doubly (or more) booked at hour $h$ by changing \ref{pco_ip_constraint_d} (which enforced (d)) to
 \begin{gather}
 	\left( \sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \right) - U \times d_{i,h} \le 1. \label{pco_ip_dualized_d}
 \end{gather}
+Where $U$ is a sufficiently large number.
 The left hand side of \ref{pco_ip_dualized_d} is the number of times that presenter $i$ is scheduled at hour $h$, and $d_{i,h}$ may be 0 or 1 if this sum is less than 2, but must be 1 if the sum is 2 or greater. 
 We then changed the objective (\ref{pco_ip_objective}) to 
 \begin{gather}
-	\text{minimize: } \sum_{j,j',h \in \mathcal C} c_{j,j',h} + \sum_{i,h \in \mathcal D} U \times d_{i,h}.
+	\text{minimize: } \sum_{(j,j',h) \in \mathcal C} w_{j,j',h} \times c_{j,j',h} + \sum_{(i,h) \in \mathcal D} U \times d_{i,h}.
 \end{gather}
-Our new objective places a penalty on presenters being multiply booked but expressly forbid it, but this penalty is arbitrarily large (controlled by our magic large constant $U$) -- as such it should be ``obvious" when such a situation has occurred. In practice, dualizing PCO led to moderate performance increases (around 75\% faster, see Figure \ref{2013_normal_sigma_run_time}).
+Our new objective places a penalty of $U$ on presenters being multiply booked.
+We should choose $U$ sufficiently large so $d$ is identically zero, otherwise the model can be resolved with a larger value of $U$. 
+In practice, dualizing PCO led to moderate performance increases of roughly 75\% faster.
+For a summary of solution times comparing the original model with the improved models discussed in this subsection see Figure \ref{2013_normal_sigma_run_time}.
 \begin{figure}[h!]
 	\caption{Run time of PCO model with decreasing $\sigma$}
 	\centering
@@ -486,7 +480,7 @@ Our new objective places a penalty on presenters being multiply booked but expre
 \end{figure}
 
 \section{Conclusion}\label{sec.conclusion}
-Scheduling conferences remains closely linked to other timetable problems. 
+Conference scheduling represents an important class of timetabling problems.
 Perhaps unexpectedly the addition of requiring talks with multiple presenters to have all their presenters scheduled together can even force those similar problems with polynomial-time solutions into the NP-Complete class. 
 Integer programming proved effective in modeling the specific constraints of our problem, and the many advancements in both commercial and open source solvers allowed for many real-world size problems to be solved effectively, although the RSVP variant studied proved significantly harder for IP even after optimization techniques to the model were applied.
 	
@@ -505,10 +499,10 @@ Integer programming proved effective in modeling the specific constraints of our
 	Penguicon Conference, \texttt{http://www.penguicon.org/}, Accessed: January, 2015.
 	\bibitem{pc2013_attendance}
 	Penguicon Programming Ops. \texttt{http://penguicon.info/doku.php/programmingops?s=attendance}.  Accessed: January, 2015. %Retried November 6, 2014
-	\bibitem{scip}
-	Achterberg, T. 2009. SCIP: solving constraint integer programs. Mathematical Programming Computation, Volume 1, Number 1: 1-41
-	\bibitem{zimpl}
-	Koch, T. 2004. Rapid Mathematical Programming. Ph.D. Thesis. Technische Universit{\"a}t Berlin. Germany
+%	\bibitem{scip}
+%	Achterberg, T. 2009. SCIP: solving constraint integer programs. Mathematical Programming Computation, Volume 1, Number 1: 1-41
+%	\bibitem{zimpl}
+%	Koch, T. 2004. Rapid Mathematical Programming. Ph.D. Thesis. Technische Universit{\"a}t Berlin. Germany
 	\bibitem{sherali}
 	Sherali, H.D., and J.C. Smith. 2001. Improving Discrete Model Representations via Symmetry Considerations. Managements Science 47: 1396-1407.
 	\bibitem{margot}
