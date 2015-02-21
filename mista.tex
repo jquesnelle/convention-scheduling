@@ -439,53 +439,36 @@ We then changed the objective (\ref{pco_ip_objective}) to
 Our new objective places a penalty of $U$ on presenters being multiply booked.
 We should choose $U$ sufficiently large so $d$ is identically zero, otherwise the model can be resolved with a larger value of $U$. 
 In practice, dualizing PCO led to moderate performance increases of roughly 75\% faster.
-For a summary of solution times comparing the original model with the improved models discussed in this subsection see Figure \ref{2013_normal_sigma_run_time}.
+
 \begin{figure}[h!]
 	\caption{Run time of PCO model with decreasing $\sigma$}
 	\centering
 	\input 2013_normal_sigma_run_time \\
-	\begin{tabular}{| l | r | r | r | r | r | r | r | r | r | r | r | r | r | r | r |}
+	\begin{tabular}{| l | r | r | r |}
 		\hline
-		& 400 & 390	 & 380  & 370 & 360 & 350 & 340 & 330 & 320 & 310 & 300 & 290 & 280 & 270 & 260 \\
+		 ($\sigma$) & Standard & Symmetry & Dualized \\ \hline
+		 400 & 5.4 & 0.8 & 0.4 \\
+		 350 & 10.0 & 1.2 & 0.4 \\
+		 300 & 6.8 & 3.0 & 0.8\\
+		 250 &12.8 &6.0 &2.2 \\
+		 200 & 22.8 & 10.2 &2.0\\
+		 150 & 196.2 & 156.8 & 45.2 \\
+		 100 & 22683.7 & 4179.2 &3282.6 \\
 		\hline
-		Rooms & 5.4 & 5.2 & 9 & 5.8 & 4.6 & 10 & 6.2 & 6.4 & 9.4 & 7 & 6.8 & 7 & 10.6 & 13.4 & 9.6 \\
-		\hline
-		Classes & 0.8 & 0.6 & 4 & 0.8 & 1.8 & 1.2 & 1 & 0.8 & 3 & 0.6 & 3 & 0.4 & 2.2 & 0.8 & 4.6 \\
-		\hline
-		Dual & 0.4 & 0.2 & 0.4 & 0.4 & 0.4 & 0.4 & 1.4 & 1.6 & 1 & 1 & 0.8 & 1.4 & 0.8 & 0.8 & 1.8 \\
-		\hline
-	\end{tabular} \\
-	\hfill \break
-	\begin{tabular}{| l | r | r | r | r | r | r | r | r | r | r | r |}
-		\hline
-		& 250 & 240 & 230 & 220 & 210 & 200 & 190 & 180 & 170 & 160 & 150 \\
-		\hline
-		Rooms & 12.8 & 19.2 & 22.8 & 27.4 & 24 & 22.8 & 32.8 & 38.6 & 53.4 & 181.6 & 196.2 \\
-		\hline
-		Classes & 6 & 5 & 7.6 & 7.6 & 4.8 & 10.2 & 13.8 & 11.8 & 25 & 165.4 & 156.8 \\
-		\hline
-		Dual & 2.2 & 3.4 & 1.8 & 2 & 2.8 & 4.8 & 4.8 & 6.8 & 13 & 8.4 & 45.2 \\
-		\hline	
-	\end{tabular} \\
-	\hfill \break
-	\begin{tabular}{| l | r | r | r | r | r |}
-		\hline
-		& 140 & 130 & 120 & 110 & 100 \\
-		\hline
-		Rooms & 907 & 553.6 & 4277.8 & 7793.4 & 22683.7 \\
-		\hline
-		Classes & 75.4 & 329.2 & 353.2 & 3884.6 & 4179.2 \\
-		\hline
-		Dual & 68.8 & 156.6 & 159.8 & 510.8 & 3282.6 \\
-		\hline
-	\end{tabular}
-	\label{2013_normal_sigma_run_time}
+	\end{tabular}	
 \end{figure}
+
+For a summary of solution times comparing the original model with the improved models discussed in this subsection see Figure \ref{2013_normal_sigma_run_time}. 
+The three models compared are: the Standard model, which corresponds to the PCO formulation given by (9)-(15); the Symmetry model, which incorporates the symmetry breaking reformulation described above; and finally the Dualized model, which incorporates both the symmetry breaking reformulation, and the dualization of constraint (d) as described above.
+The graph plots the average running time for solving 10 randomly generated instances for values of $\sigma$ between 100 and 400 with increments of 10. 
+The table slows the same information, only listing times for instances where $\sigma$ is a multiple of 50.
+All times are listed in seconds.
+
 
 \section{Conclusion}\label{sec.conclusion}
 Conference scheduling represents an important class of timetabling problems.
-Perhaps unexpectedly the addition of requiring talks with multiple presenters to have all their presenters scheduled together can even force those similar problems with polynomial-time solutions into the NP-Complete class. 
-Integer programming proved effective in modeling the specific constraints of our problem, and the many advancements in both commercial and open source solvers allowed for many real-world size problems to be solved effectively, although the RSVP variant studied proved significantly harder for IP even after optimization techniques to the model were applied.
+This paper studies a conference scheduling problem where participant RSVP conflicts are minimized, subject to a collection of hard constraints.
+We have demonstrated integer programming to be an effective solution technique, especially after incorporating symmetry breaking and other improvements.
 	
 \begin{thebibliography}{9}
 	\bibitem{even76}
