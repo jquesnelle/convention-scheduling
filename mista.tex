@@ -123,7 +123,7 @@ As we will see in the proof, the CTTD problem is NP-complete even without the in
 \begin{proof}
 We first note that CTTD is clearly in NP.  
 Given a graph $G=(V,E)$ and a positive integer $k$, we will show how to construct an instance of CTTD that is feasible if and only if $G$ is $k$-colorable.
-For simplicity of presentation we assume that $G$ contains isolated nodes (coloring of such nodes is trivial).
+For simplicity of presentation we assume that $G$ contains no isolated nodes (coloring of such nodes is trivial).
 Essentially, a talk is created to correspond to each vertex in $G$, each of the $k$ colors corresponds to an hour in which talks can be scheduled and speakers are created to correspond to the edges in $G$.
 More formally, define $H=\{1, 2, \cdots, k\}$ and for each vertex $v_j \in V=\{v_1, v_2, \cdots, v_{|V|}\}$ let $T_j = H$. 
 For each edge $e_l \in E=\{e_1, e_2, \cdots, e_{|E|}\}$ we let $P_l = H$. 
