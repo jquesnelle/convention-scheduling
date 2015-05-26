@@ -301,20 +301,20 @@ We implicitly enforce this in our model by considering only the variables indexe
 As such, no specific constraints are needed in our model.
 
 The second requirement (b) ensures that every presenter is scheduled for all of their talks, which we receive as parameter $G$ to ECTTD where $G_{ij}$ is the number of times presenter $i$ should give talk $j$. 
-For each presenter $i$ and talk $j$, the sum of the times they are scheduled (over all hours and rooms) should be $G_{ij}$; this is constraint \ref{ectto_ip_constraint_b}.
+For each presenter $i$ and talk $j$, the sum of the times they are scheduled (over all hours and rooms) should be $G_{ij}$; this is constraint \eqref{ectto_ip_constraint_b}.
 
-To ensure requirement (c) we force that all co-presenters have the same schedule for their shared talk (constraint \ref{ectto_ip_constraint_c_2}).
+To ensure requirement (c) we force that all co-presenters have the same schedule for their shared talk (constraint \eqref{ectto_ip_constraint_c_2}).
 
 Requirements (a)-(c) guarantee that all presenters are scheduled for their talks and that co-presenters are scheduled together. 
 Requirement (d) ensures that if a presenter has multiple talks, then these talks are scheduled during different hours.  
-For each presenter $i$ and hour $h$, the sum of their schedule variables for their talks in all rooms must be less than or equal to one (constraint \ref{ectto_ip_constraint_d}).
+For each presenter $i$ and hour $h$, the sum of their schedule variables for their talks in all rooms must be less than or equal to one (constraint \eqref{ectto_ip_constraint_d}).
 
 The final requirement (e) ensures that room scheduling is exclusive. 
 We would like to simply iterate over $\mathcal F$ for a particular pair of hour $h$ and room $r$, summing all of these together. 
 If we didn't allow co-presenters (like TTD) then we could simply make this sum less than or equal to one. But, for talks with co-presenters this sum varies. 
 To overcome this we create indicator variables $g_{j,h,r}$ where $g_{j,h,r}=1$ whenever talk $j$ is scheduled at hour $h$ in room $r$; 
-this is modeled in constraint \ref{ectto_ip_constraint_e_1}, where $U$ represents a sufficiently large number.
-Finally, constraint \ref{ectto_ip_constraint_e_1} ensures that no room is multi-booked by checking the sum of $g_{j,h,r}$ for each pair $h,r$.
+this is modeled in constraint \eqref{ectto_ip_constraint_e_1}, where $U$ represents a sufficiently large number.
+Finally, constraint \eqref{ectto_ip_constraint_e_1} ensures that no room is multi-booked by checking the sum of $g_{j,h,r}$ for each pair $h,r$.
 
 Solving this feasibility problem proved tractable. 
 We solved this formulation with the open source IP solver CBC on PC2013 with varying numbers of talks pruned out to see how the model scales. 
@@ -359,13 +359,13 @@ The objective function that is minimized in the model is the sum of elements in 
 %		&\text{integer: } c_{j,j',h}&
 	\end{flalign}
 \end{quote}
-Constraints \ref{pco_ip_constraint_b} - \ref{pco_ip_constraint_e_2} are the same as in our model for ECTTD. 
-Constraint \ref{pco_ip_constraint_z} begins to build the $z$ variables which will be 0-1 indicators of talk $j$ being given at hour $h$ via the same boolean cast mechanism described previously by collapsing the room entries for $j,h$ in $g$. 
-To ensure that only the correct number of $z$s are set to one, constraint \ref{pco_ip_constraint_z_2} sums all hours $h$ for each talk $j$ and sets it equal to the number of times that talk $j$ was set to be given in the problem instance (the matrix $G$). 
+Constraints \eqref{pco_ip_constraint_b} - \eqref{pco_ip_constraint_e_2} are the same as in our model for ECTTD. 
+Constraint \eqref{pco_ip_constraint_z} begins to build the $z$ variables which will be 0-1 indicators of talk $j$ being given at hour $h$ via the same boolean cast mechanism described previously by collapsing the room entries for $j,h$ in $g$. 
+To ensure that only the correct number of $z$s are set to one, constraint \eqref{pco_ip_constraint_z_2} sums all hours $h$ for each talk $j$ and sets it equal to the number of times that talk $j$ was set to be given in the problem instance (the matrix $G$). 
 It is of note that we pick \emph{any} presenter $i$'s entry in $G$ for talk $j$; although it is possible that a co-presenter $i'$ may have a different value for $G_{i'j}$ requirement (c) of PCO explicitly forbids this since it would be impossible for all co-presenters to be at all instances of a talk if they had different entries for their shared talk $j$, thus we can pick any presenter $i$.
 
 The $z$ variables will now be used to generate $c$, which indicates if a pair of talks $j,j'$ are being given concurrently at hour $h$. 
-Specifically, constraint \ref{pco_ip_constraint_z'} , enforces that $z_{j,h} = 1 \text{ and } z_{j',h} = 1 \implies c_{j,j',h}=1$. 
+Specifically, constraint \eqref{pco_ip_constraint_z'} , enforces that $z_{j,h} = 1 \text{ and } z_{j',h} = 1 \implies c_{j,j',h}=1$. 
 The objective (\ref{pco_ip_objective}) of the model is to minimize the sum of RSVP conflicts.
 Each variable $c_{j,j',h}$ appears with coefficient of $w_{j,j',h}$, which is the number of RSVP conflicts generated by talks $j$ and $j'$ being scheduled in the same time period.
 Note that if the coefficient $w_{j,j',h}$ is nonzero, then the minimization nature of the problem will force the corresponding $c_{j,j',h}$ to take zero value whenever possible.
@@ -417,9 +417,9 @@ The corresponding new availability set $A'$ has simply the common availability s
 For the new suitability set $S'$ we replace each instance of $r$ with the room class $r'$ that $r$ is a member of. 
 When we solve our model talks will be booked to room classes, avoiding the symmetry that arises by having to consider two essentially ``equal" rooms separately. 
 When our model is solved we will have bookings in room classes, and we can arbitrarily assign the talk to any room in that class. 
-We must make only one adjustment to our model: Constraint \ref{pco_ip_constraint_e_2} in the PCO model ensures that each room has only one talk booked in it per hour. 
+We must make only one adjustment to our model: Constraint \eqref{pco_ip_constraint_e_2} in the PCO model ensures that each room has only one talk booked in it per hour. 
 For our room classes we wish to relax this, requiring only that the number of bookings be at most the number of rooms in the class; this way, when we assign actual rooms from the solved model we can match talks to rooms in a one-to-one way. 
-Formally, we will change Constraint \ref{pco_ip_constraint_e_2} to
+Formally, we will change constraint \eqref{pco_ip_constraint_e_2} to
 \begin{gather}
 	\sum_{j \in \mathcal G_{h,r}} g_{j,h,r} \le |r|.
 \end{gather}
@@ -430,13 +430,13 @@ The next step we took to improve performance was to \emph{dualize} one class of 
 In this technique, these requirements are moved from being hard constraints in the model, to appearing in the objective function with a sufficiently large penalty to ensure their satisfaction.
 We chose to dualize constraint (d), namely that no presenter is scheduled for more than one talk per hour. 
 Intuitively, this seemed like a promising adjustment because these constraints are similar in structure to the RSVP conflicts that are minimized in the objective function.
-We first created 0-1 indicator variables $d_{i,h} = 1 \iff $ presenter $i$ is doubly (or more) booked at hour $h$ by changing \ref{pco_ip_constraint_d} (which enforced (d)) to
+We first created 0-1 indicator variables $d_{i,h} = 1 \iff $ presenter $i$ is doubly (or more) booked at hour $h$ by changing \eqref{pco_ip_constraint_d} (which enforced (d)) to
 \begin{gather}
 	\left( \sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \right) - U \times d_{i,h} \le 1. \label{pco_ip_dualized_d}
 \end{gather}
 Where $U$ is a sufficiently large number.
-The left hand side of \ref{pco_ip_dualized_d} is the number of times that presenter $i$ is scheduled at hour $h$, and $d_{i,h}$ may be 0 or 1 if this sum is less than 2, but must be 1 if the sum is 2 or greater. 
-We then changed the objective (\ref{pco_ip_objective}) to 
+The left hand side of \eqref{pco_ip_dualized_d} is the number of times that presenter $i$ is scheduled at hour $h$, and $d_{i,h}$ may be 0 or 1 if this sum is less than 2, but must be 1 if the sum is 2 or greater. 
+We then changed the objective \eqref{pco_ip_objective} to 
 \begin{gather}
 	\text{minimize: } \sum_{(j,j',h) \in \mathcal C} w_{j,j',h} \times c_{j,j',h} + \sum_{(i,h) \in \mathcal D} U \times d_{i,h}.
 \end{gather}
