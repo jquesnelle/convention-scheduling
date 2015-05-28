@@ -13,7 +13,7 @@
 
 \begin{document}
 	
-\title{Scheduling a conference to minimize RSVP conflicts}
+\title{Scheduling a conference to minimize attendee preference conflicts}
 \author{Jeffrey Quesnelle \and Daniel Steffy}
 	
 \institute{Jeffrey Quesnelle \at
@@ -28,8 +28,9 @@
 \maketitle
 	
 \begin{abstract}
-This paper describes a conference scheduling (or timetabling) problem where, at the time of registration, participants RSVP to events which they would like to attend.
-Based upon these preferences, an assignment of events to rooms and time slots should be determined that minimizes the number of RSVP conflicts and satisfies a number of hard constraints.
+This paper describes a conference scheduling (or timetabling) problem where, at the time of registration, participants indicate preferences for events within the conference which they would like to attend.
+Based upon these preferences, an assignment of events to rooms and time slots should be determined that minimizes the number of attendee preference conflicts and satisfies a number of hard constraints.
+Ideally the schedule should be constructed so that for most, or all, participants the events in which they indicated an interest are assigned different time slots.
 We show that our problem, and several variants of it, are NP-hard.
 An integer programming model is developed to solve the problem and a computational study of this model is performed on instances generated from real data.
 Improvements to the model, including a symmetry breaking reformulation and a dualization of some hard constraints, are shown to significantly improve solution times, making the problem tractable for the desired real world application.
@@ -41,7 +42,7 @@ Improvements to the model, including a symmetry breaking reformulation and a dua
 This project was motivated by the problem of scheduling events within PenguiCon \cite{pc}, a conference organized by the open-source community in Michigan.  
 The conference typically includes approximately 250 events such as lectures, demonstrations and panel discussions, all of which must be scheduled into rooms and time slots.
 Many of the events involve multiple presenters/panelists, and many presenters participate in more than one event; it is a hard constraint that no speaker can be multi-booked during a given time period.
-Furthermore, the registration website will give conference participants the ability to ``RSVP" to events before the schedule is generated, giving the extra complication of trying to generate the schedule based on these RSVPs that minimizes conflicts amongst presentations that attendees had previously indicated a common interest.
+Furthermore, the registration website will give conference participants the ability to indicate preferences for events before the schedule is generated, giving the extra complication of trying to generate the schedule based on these responses that minimizes participant schedule conflicts.
 Our problem is related to previously studied conference and class scheduling problems but includes what we believe is a novel and difficult combination of constraints and objectives.
 The goal of this paper is to model our problem, relate it to previous work, and implement solution methods that can be deployed to schedule the PenguiCon conference in practice.
 
@@ -115,7 +116,6 @@ We call this variant the Conference Timetable Decision problem (CTTD).
 
 We now show that CTTD is NP-complete via reduction from the Graph $k$-colorability problem, the decision problem of determining whether a graph admits a $k$-coloring, which is well known to be NP-complete \cite{garey76_2}.
 As we will see in the proof, the CTTD problem is NP-complete even without the inclusion of the availability constraints and even if each entry $G_{ij}$ is equal to zero or one.
-%We note that although result is not surprising, it does not follow trivially via reduction from TTD.
 
 \begin{proposition}\label{cttd_np}
 	CTTD is NP-Complete.
@@ -228,7 +228,8 @@ We also note that since this is a clear generalization of CTTD, and in the class
 
 \subsection{Preference Conference Optimization Problem}
 We have examined several different variations of scheduling problems as they relate to conferences; we now offer a final variation that will be the subject of study for the rest of the paper. 
-In particular we are interested in not only finding a schedule that is feasible with respect to speaker and room logistics,  but one that also minimizes ``RSVP conflicts" to conference attendees. 
+In particular we are interested in not only finding a schedule that is feasible with respect to speaker and room logistics,  but one that also minimizes attendee preference conflicts.
+Formally, an \emph{attendee preference conflict} is a tuple $(e,j,j')$ where $e$ is an attendee, $j,j'$ are two events for which $e$ has indicated an interest to attend, and $j,j'$ are scheduled to occur during the same time slot.
 Namely, given the set of conference attendees and their preferences for talks they would like to attend, we want to minimize the total number of times that a given attendee has shown preference for a pair of talks that are scheduled in the same time period.
 We call the resulting optimization problem the Preference Conference Optimization problem (PCO).
 \begin{quote}
@@ -245,8 +246,7 @@ We call the resulting optimization problem the Preference Conference Optimizatio
 	\begin{gather*}
 		f(i,j,h,r) : \{1,\cdots,n\} \times \{1,\cdots,m\} \times H \times R \rightarrow \{0,1\}
 	\end{gather*}
-	that satisfies all the constraints of the ECTTD problem while minimizing the sum of the RSVP conflicts, where we define an RSVP conflict to be any tuple $(e,j,j')$ such that  there exist $i,i',h,r$ and $r'$ such that $f(i,j,h,r)=f(i',j',h,r')=1$ where $W_{ej}=1$ and $W_{ej'}=1$.
-In other words, an RSVP conflict occurs each time an attendee $e$ would like to attend two talks $j$ and $j'$ that are scheduled during the same hour.
+	that satisfies all the constraints of the ECTTD problem while minimizing the sum of the attendee preference conflicts where, as described above, an attendee preference conflict is any tuple $(e,j,j')$ such that there exist $i,i',h,r$ and $r'$ such that $f(i,j,h,r)=f(i',j',h,r')=1$ where $W_{ej}=1$ and $W_{ej'}=1$.
 \end{quote}
 
 \section{Integer programming models}\label{sec.model}
@@ -255,7 +255,7 @@ We will present integer programming models that can solve PCO and ECTTD.
 The data used to measure the models comes from a real conference held in 2013, which we shall refer to as PC2013. 
 PC2013 had 195 presenters giving a total of 253 talks. 
 Figure \ref{fig_pc2013_graph} helps illustrate the data we worked with: each vertex represents a talk and adjacent vertices share a common presenter and cannot be scheduled at the same time. 
-By Proposition~\ref{cttd_np}, solving CTTD is equivalent to asking if this graph admits an $h$-coloring (where $h$ is the number of timeslots available at the conference).
+By Proposition~\ref{cttd_np}, solving CTTD is equivalent to asking if this graph admits an $h$-coloring (where $h$ is the number of time slots available at the conference).
 \begin{figure}[h!]
 	\caption{Presenter conflicts that must be scheduled around in PC2013}
 	\centering
@@ -366,12 +366,12 @@ It is of note that we pick \emph{any} presenter $i$'s entry in $G$ for talk $j$;
 
 The $z$ variables will now be used to generate $c$, which indicates if a pair of talks $j,j'$ are being given concurrently at hour $h$. 
 Specifically, constraint \eqref{pco_ip_constraint_z'} , enforces that $z_{j,h} = 1 \text{ and } z_{j',h} = 1 \implies c_{j,j',h}=1$. 
-The objective (\ref{pco_ip_objective}) of the model is to minimize the sum of RSVP conflicts.
-Each variable $c_{j,j',h}$ appears with coefficient of $w_{j,j',h}$, which is the number of RSVP conflicts generated by talks $j$ and $j'$ being scheduled in the same time period.
+The objective (\ref{pco_ip_objective}) of the model is to minimize the sum of attendee preference conflicts.
+Each variable $c_{j,j',h}$ appears with coefficient of $w_{j,j',h}$, which is the number of attendee preference conflicts generated by talks $j$ and $j'$ being scheduled in the same time period.
 Note that if the coefficient $w_{j,j',h}$ is nonzero, then the minimization nature of the problem will force the corresponding $c_{j,j',h}$ to take zero value whenever possible.
 
 To measure the efficiency of our model we tested it on our sample set PC2013. 
-This data set included information about talks, speakers and attendance, but did not include participant RSVP preferences (as they were not solicited that year), however we may use this data to generate reasonable instances by taking the historical attendance data as a basis for generating hypothetical RSVP preferences.
+This data set included information about talks, speakers and attendance, but did not include attendee preferences (as they were not solicited that year), however we may use this data to generate reasonable instances by taking the historical attendance data as a basis for generating hypothetical attendee preferences.
 Attendance figures we recorded for each talk given at PC2013; a distribution of the attendance per talk is shown in Figure \ref{2013_attendance_distribution}.
 \begin{figure}[h!]
 	\caption{Distribution of attendance at PC2013}
@@ -380,9 +380,9 @@ Attendance figures we recorded for each talk given at PC2013; a distribution of 
 	\label{2013_attendance_distribution}
 \end{figure}
 The sum of all attendance counts was 4101 \cite{pc2013_attendance} for around 1000 unique attendees. 
-For the purposes of testing our model created a $W$ such that $\sum\limits_{i=0}^{n} W_{ij}$ was equal to the attendance count for that talk $j$, i.e. we created an ``RSVP" for each real talk attendance at PC2013. 
-Since individual attendee attendance wasn't tracked (only totals were) we took some liberties in distributing the RSVPs across the attendees in our model. 
-We first randomly spread the RSVPs over the attendees using a uniform distribution; that is, if talk $j$ had an attendance of 24 in PC2013 then 24 attendees were randomly chosen to attend this talk. 
+For the purposes of testing our model created a $W$ such that $\sum\limits_{i=0}^{n} W_{ij}$ was equal to the attendance count for that talk $j$, i.e. we created an indicated attendance preference for each real talk attendance at PC2013. 
+Since individual attendee attendance wasn't tracked (only totals were) we took some liberties in distributing the preference responses across the attendees in our model. 
+We first randomly spread the preference responses over the attendees using a uniform distribution; that is, if talk $j$ had an attendance of 24 in PC2013 then 24 attendees were randomly chosen to express a preference for attending this talk. 
 We solved our model with commercial solver Gurobi which returned a solution with an objective value of 0 after 64 seconds, i.e. a schedule with absolutely no attendee conflicts.
 All computations were run on a machine with 4 12-core Intel Xeon E5-2695 CPUs running at 2.4 GHz with 96 GB of RAM
 %\footnote{PCO models were run on a machine with 4 12-core Intel Xeon E5-2695 CPUs running at 2.4 GHz with 96 GB of RAM. The authors would like to thank the SECS department at Oakland University for graciously providing the computation time for this paper. They would also like to thank Gurobi Optimization, Inc. for furnishing a free academic license of their Gurobi Optimizer.} .
@@ -391,13 +391,13 @@ After finding a non-conflicting schedule for uniformly distributed random attend
 Our intuition was that, like the actual attendance figures, the distribution of attendance per attendee would not be evenly spaced out; there would be some attendees who went to many talks, and some who went to only a few. 
 We chose a normal distribution with $\mu = 500, \sigma = 100$. 
 For each attendance in the PC2013 distribution (Figure \ref{2013_attendance_distribution}) a random integer from the normal distribution was chosen. 
-Since $\mu = 500$ those attendees with index around $500$ were much more likely to be chosen to RSVP to the talk then those with indices $50$ or $950$, which implemented our intuition that a small percentage of attendees will RSVP for many talks while the bulk of those remaining will RSVP to relatively few.
+Since $\mu = 500$ those attendees with index around $500$ were much more likely to be chosen to indicate a preference to the talk then those with indices $50$ or $950$, which implemented our intuition that a small percentage of attendees will indicate attendance preferences for many talks while the bulk of those remaining will indicate preferences for relatively few.
 In addition, we added a check to ensure that no attendee was selected to attend more talks than were hours available; such a scenario would automatically preclude a zero objective value.
 Even with an extremely powerful computer to run our model on and a state-of-the-art commercial solver we were unable to solve this instance after 24 hours. 
 To help understand this phenomenon we created a half-sized problem (half as many talks and hours) and ran the model with decreasing values of $\sigma$ and found that the solving time exploded exponentially as $\sigma$ decreased; the average running time for $\sigma = 200$ was 22 seconds but increased to 22,683 seconds for $\sigma = 100$.
 
 \subsubsection{Performance considerations}
-After including RSVP preferences in our test models, the integer programming models became significantly more difficult to solve.
+After including attendee preferences in our test models, the integer programming models became significantly more difficult to solve.
 One possible cause of this is symmetry present in the models, a property that often leads to increased solution time \cite{sherali}.
 An integer programming model is \emph{symmetric} if its variables can be permuted without changing the structure of the problem \cite{margot}. 
 Our model exhibits high amounts of symmetry in relation to the scheduling of talks in rooms. 
@@ -429,7 +429,7 @@ In practice the removal of the room symmetries increased performance by roughly 
 The next step we took to improve performance was to \emph{dualize} one class of constraints.
 In this technique, these requirements are moved from being hard constraints in the model, to appearing in the objective function with a sufficiently large penalty to ensure their satisfaction.
 We chose to dualize constraint (d), namely that no presenter is scheduled for more than one talk per hour. 
-Intuitively, this seemed like a promising adjustment because these constraints are similar in structure to the RSVP conflicts that are minimized in the objective function.
+Intuitively, this seemed like a promising adjustment because these constraints are similar in structure to the attendee preference conflicts that are minimized in the objective function.
 We first created 0-1 indicator variables $d_{i,h} = 1 \iff $ presenter $i$ is doubly (or more) booked at hour $h$ by changing \eqref{pco_ip_constraint_d} (which enforced (d)) to
 \begin{gather}
 	\left( \sum_{j,r \in \mathcal F_{i,h}} f_{i,j,h,r} \right) - U \times d_{i,h} \le 1. \label{pco_ip_dualized_d}
@@ -474,7 +474,7 @@ We also note that it turned out that for the generated instances solved in these
 
 \section{Conclusion}\label{sec.conclusion}
 Conference scheduling represents an important class of timetabling problems.
-This paper studies a conference scheduling problem where participant RSVP conflicts are minimized, subject to a collection of hard constraints.
+This paper studies a conference scheduling problem where attendee preference conflicts are minimized, subject to a collection of hard constraints.
 We have demonstrated integer programming to be an effective solution technique, especially after incorporating symmetry breaking and other improvements.
 	
 \begin{thebibliography}{9}
